@@ -1,0 +1,8 @@
+<?php
+
+/**
+* Implements hook_install.
+* - We want to create the /skyword/publish/v1 endpoint for all other resources.
+* - Optionally? Create content types or discover existing ones and prompt admin.
+*/
+function skyword_install () { }

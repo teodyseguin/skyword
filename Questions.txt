@@ -1,0 +1,11 @@
+
+- Authentication:
+  - Oauth for authentication, how is this supposed to work?
+    - Is the Customers site authenticating to Skyword,
+      or is Skyword authenticating to the Customer site.
+
+- IP Filtering is something that is built into Services api, so there is not a need
+  to build this out. https://www.drupal.org/project/rest_server_ip_filtering provides this
+  functionality.
+
+- 

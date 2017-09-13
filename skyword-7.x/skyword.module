@@ -1,0 +1,99 @@
+<?php
+
+define('SKYWORD_VERSION', 1); // Define the version of this api.
+
+/**
+* Implements hook_services_resources
+*/
+function skyword_services_resources() {
+  return array(
+    'version' => array(
+      'retrieve' => array(
+        'help' => 'Returns the version of this site.',
+        'file' => array('type' => 'inc', 'module' => 'skyword', 'name' => 'version'),
+        'callback' => 'skyword_version_retrieve',
+        'access callback' => 'skyword_access',
+        'access arguments' => array('view version'),
+        'access arguments append' => TRUE
+      ),
+    ),
+    'authors' => array(
+      'index' => array(
+        'help' => 'Returns the index of Authors.',
+        'file' => array('type' => 'inc', 'module' => 'skyword', 'name' => 'authors'),
+        'callback' => 'skyword_authors_index',
+        'access callback' => 'skyword_access',
+        'access arguments' => array('view authors'),
+        'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'page',
+            'type' => 'int',
+            'description' => 'Starting page.',
+            'source' => array('path' => 0),
+            'optional' => TRUE,
+          ),
+          array(
+            'name' => 'per_page',
+            'type' => 'int',
+            'description' => 'The​ ​number​ ​to​ ​retrieve​ ​per​ ​page.​ ​​ ​Default is​ ​250.',
+            'source' => array('path' => 0),
+            'optional' => TRUE,
+          )
+        )
+      ),
+      'retrieve' => array(
+        'help' => 'Returns the index of Authors.',
+        'file' => array('type' => 'inc', 'module' => 'skyword', 'name' => 'authors'),
+        'callback' => 'skyword_authors_get',
+        'access callback' => 'skyword_access',
+        'access arguments' => array('view author'),
+        'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'id',
+            'type' => 'int',
+            'description' => 'The unique id of the author.',
+            'source' => array('path' => 0),
+            'optional' => FALSE
+          )
+        ),
+      ),
+      'create' => array( ),
+      'update' => array( ),
+    ),
+    'posts' => array(
+      'index' => array( ),
+      'retrieve' => array(),
+      'create' => array( ),
+      'update' => array( ),
+    ),
+    'media' => array(
+      'index' => array( ),
+      'retrieve' => array( ),
+      'create' => array( ),
+      'update' => array( ),
+    ),
+    'content-types' => array(
+      'index' => array( ),
+      'retrieve' => array( ),
+      'create' => array( ),
+      'update' => array( ), // Not listed but maybe this is not needed.
+    ),
+  );
+}
+
+
+/**
+* Access callback check for Skyword API Services.
+*/
+function skyword_access($op, $args) {
+  global $user;
+  $access = FALSE;
+  switch($op) {
+    case 'view version':
+      $access = TRUE;
+    break;
+  }
+  return $access;
+}
