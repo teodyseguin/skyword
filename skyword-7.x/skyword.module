@@ -3,6 +3,95 @@
 define('SKYWORD_VERSION', 1); // Define the version of this api.
 
 /**
+* Implements hook_permission().
+*/
+function skyword_permission() {
+  return array(
+    'administer skyword' => array(
+      'title' => t('Administer Skyword'),
+      'description' => t('Configure and setup Skyword API')
+    )
+  );
+}
+
+/**
+* Implements hook_menu().
+*/
+function skyword_menu() {
+  $items['admin/config/services/skyword'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('skyword_admin_settings'),
+    'description' => t('Configure Skyword API'),
+    'access arguments' => array('administer skyword'),
+    'title' => t('Skyword API')
+  );
+
+  return $items;
+}
+
+/**
+* Returns the administration form for Skyword service.
+*/
+function skyword_admin_settings($form, &$form_state) {
+  $available_fields = _skyword_author_fields();
+
+  $form['skyword_author'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Author Settings'),
+    '#description' => t('Map the Author fields to your system\'s settings.')
+  );
+
+  $form['skyword_author']['skyword_author_id'] = array(
+    '#type' => 'select',
+    '#title' => t('ID'),
+    '#default_value' => variable_get('skyword_author_id'),
+    '#required' => TRUE,
+    '#options' => $available_fields,
+  );
+
+  $form['skyword_author']['skyword_author_firstname'] = array(
+    '#type' => 'select',
+    '#title' => t('First Name'),
+    '#default_value' => variable_get('skyword_author_firstname'),
+    '#required' => TRUE,
+    '#options' => $available_fields,
+  );
+
+  $form['skyword_author']['skyword_author_lastname'] = array(
+    '#type' => 'select',
+    '#title' => t('Last Name'),
+    '#default_value' => variable_get('skyword_author_lastname'),
+    '#required' => TRUE,
+    '#options' => $available_fields,
+  );
+
+  $form['skyword_author']['skyword_author_email'] = array(
+    '#type' => 'select',
+    '#title' => t('Email'),
+    '#default_value' => variable_get('skyword_author_email', 'mail'),
+    '#required' => TRUE,
+    '#options' => $available_fields,
+  );
+
+  $form['skyword_author']['skyword_author_byline'] = array(
+    '#type' => 'select',
+    '#title' => t('Byline'),
+    '#default_value' => variable_get('skyword_author_byline'),
+    '#required' => TRUE,
+    '#options' => $available_fields,
+  );
+
+  $form['skyword_author']['skyword_author_icon'] = array(
+    '#type' => 'select',
+    '#title' => t('Icon'),
+    '#default_value' => variable_get('skyword_author_icon', 'picture'),
+    '#options' => $available_fields,
+  );
+
+  return system_settings_form($form);
+}
+
+/**
  * Implements hook_services_resources
  */
 function skyword_services_resources() {
@@ -11,21 +100,20 @@ function skyword_services_resources() {
       'retrieve' => array(
         'help' => 'Returns authentication token from this site',
         'file' => array(
-          'type' => 'inc', 
-          'module' => 'skyword', 
+          'type' => 'inc',
+          'module' => 'skyword',
         ),
         'callback' => '_skyword_token_retrieve',
         'access callback' => '_skyword_access',
         'access arguments' => array('retrieve token'),
         'access arguments append' => TRUE,
-      ), 
+      ),
     ),
     'version' => array(
-      'retrieve' => array(
+      'index' => array(
         'help' => 'Returns the version of this site.',
-        'file' => array('type' => 'inc', 'module' => 'skyword', 'name' => 'version'),
-        'callback' => 'skyword_version_retrieve',
-        'access callback' => 'skyword_access',
+        'callback' => '_skyword_version_retrieve',
+        'access callback' => '_skyword_access',
         'access arguments' => array('view version'),
         'access arguments append' => TRUE
       ),
@@ -33,9 +121,8 @@ function skyword_services_resources() {
     'authors' => array(
       'index' => array(
         'help' => 'Returns the index of Authors.',
-        'file' => array('type' => 'inc', 'module' => 'skyword', 'name' => 'authors'),
-        'callback' => 'skyword_authors_index',
-        'access callback' => 'skyword_access',
+        'callback' => '_skyword_authors_index',
+        'access callback' => '_skyword_access',
         'access arguments' => array('view authors'),
         'access arguments append' => TRUE,
         'args' => array(
@@ -57,9 +144,8 @@ function skyword_services_resources() {
       ),
       'retrieve' => array(
         'help' => 'Returns the index of Authors.',
-        'file' => array('type' => 'inc', 'module' => 'skyword', 'name' => 'authors'),
-        'callback' => 'skyword_authors_get',
-        'access callback' => 'skyword_access',
+        'callback' => '_skyword_authors_get',
+        'access callback' => '_skyword_access',
         'access arguments' => array('view author'),
         'access arguments append' => TRUE,
         'args' => array(
@@ -72,7 +158,22 @@ function skyword_services_resources() {
           )
         ),
       ),
-      'create' => array( ),
+      'create' => array(
+        'help' => 'Returns the index of Authors.',
+        'callback' => '_skyword_authors_create',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('view author'),
+        'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'data',
+            'type' => 'struct',
+            'description' => 'The data for creating a new Author.',
+            'source' => 'data',
+            'optional' => FALSE
+          )
+        ),
+      ),
       'update' => array( ),
     ),
     'posts' => array(
@@ -100,22 +201,86 @@ function skyword_services_resources() {
  * Access callback check for Skyword API Services.
  */
 function _skyword_access($op, $args) {
+  return TRUE;
+
+  // @TODO: Access permissions after functionality.
+
   global $user;
   $access = FALSE;
 
   switch($op) {
     case 'view version':
       $access = TRUE;
-
       break;
 
     case 'retrieve token':
       object_log('retrieve token', 'called');
       $access = TRUE;
-
       break;
   }
 
   return $access;
 }
 
+
+/**
+* Helper function to load author nodes.
+*/
+function skyword_author_load_multiple($ids = array()) {
+  $id = variable_get('skyword_author_id', 'field_id');
+  $firstName = variable_get('skyword_author_firstname', 'field_first_name');
+  $lastName = variable_get('skyword_author_lastname', 'field_last_name');
+  $email = variable_get('skyword_author_email', 'field_email');
+  $byline = variable_get('skyword_author_byline', 'field_byline');
+  $icon = variable_get('skyword_author_icon', 'field_picture');
+
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'author');
+
+  if(is_array($ids) && count($ids) > 0) {
+    $query->fieldCondition('field_id', 'value', $ids, 'IN');
+  }
+
+  $results = $query->execute();
+  $nids = array_keys($results['node']);
+  $nodes = entity_load('node', $nids);
+  $response = array();
+  foreach($nodes as $delta => $author) {
+    $row = array(
+      'id' => $author->{$id}['und'][0]['value'],
+      'firstName' => $author->{$firstName}['und'][0]['value'],
+      'lastName' => $author->{$lastName}['und'][0]['value'],
+      'email' => $author->{$email}['und'][0]['value'],
+      'byline' => $author->{$byline}['und'][0]['value'],
+    );
+
+    if ($icon) {
+      $row['icon'] = file_create_url($author->{$icon}['und'][0]['uri']);
+    }
+    $response[$row['id']] = $row;
+  }
+
+  return $response;
+}
+
+/**
+* Helper function to return all user related fields.
+*/
+function _skyword_author_fields() {
+  $field_options = array(
+    -1 => t('Please Select a field'),
+  );
+
+  $fields = field_info_instances('node', 'author');
+  if ($fields) {
+    foreach($fields as $id => $field) {
+      $info = field_info_field($id);
+      $field_options[$id] = $field['label'];
+    }
+  }
+  return $field_options;
+}
+
+include_once drupal_get_path('module', 'skyword') . '/skyword.version.inc';
+include_once drupal_get_path('module', 'skyword') . '/skyword.author.inc';

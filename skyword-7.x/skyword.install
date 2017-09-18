@@ -5,4 +5,15 @@
 * - We want to create the /skyword/publish/v1 endpoint for all other resources.
 * - Optionally? Create content types or discover existing ones and prompt admin.
 */
-function skyword_install () { }
+function skyword_install () {
+
+  // We need to create the Author content type....
+  $author_exists = node_type_load('author');
+  if (!$author_exists) {
+    // Programmatically create the author and
+    // Set the initial variable values for the fields
+
+    
+  }
+
+}
