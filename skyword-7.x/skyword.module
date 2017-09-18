@@ -3,10 +3,23 @@
 define('SKYWORD_VERSION', 1); // Define the version of this api.
 
 /**
-* Implements hook_services_resources
-*/
+ * Implements hook_services_resources
+ */
 function skyword_services_resources() {
   return array(
+    'token' => array(
+      'retrieve' => array(
+        'help' => 'Returns authentication token from this site',
+        'file' => array(
+          'type' => 'inc', 
+          'module' => 'skyword', 
+        ),
+        'callback' => '_skyword_token_retrieve',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('retrieve token'),
+        'access arguments append' => TRUE,
+      ), 
+    ),
     'version' => array(
       'retrieve' => array(
         'help' => 'Returns the version of this site.',
@@ -83,17 +96,26 @@ function skyword_services_resources() {
   );
 }
 
-
 /**
-* Access callback check for Skyword API Services.
-*/
-function skyword_access($op, $args) {
+ * Access callback check for Skyword API Services.
+ */
+function _skyword_access($op, $args) {
   global $user;
   $access = FALSE;
+
   switch($op) {
     case 'view version':
       $access = TRUE;
-    break;
+
+      break;
+
+    case 'retrieve token':
+      object_log('retrieve token', 'called');
+      $access = TRUE;
+
+      break;
   }
+
   return $access;
 }
+
