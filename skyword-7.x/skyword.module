@@ -12,7 +12,8 @@ function skyword_services_resources() {
         'help' => 'Returns authentication token from this site',
         'file' => array(
           'type' => 'inc', 
-          'module' => 'skyword', 
+          'module' => 'token', 
+          'name' => 'resources/token',
         ),
         'callback' => '_skyword_token_retrieve',
         'access callback' => '_skyword_access',
@@ -23,20 +24,28 @@ function skyword_services_resources() {
     'version' => array(
       'retrieve' => array(
         'help' => 'Returns the version of this site.',
-        'file' => array('type' => 'inc', 'module' => 'skyword', 'name' => 'version'),
+        'file' => array(
+          'type' => 'inc', 
+          'module' => 'skyword', 
+          'name' => 'resources/version'
+        ),
         'callback' => 'skyword_version_retrieve',
         'access callback' => 'skyword_access',
-        'access arguments' => array('view version'),
+        'access arguments' => array('retrieve version'),
         'access arguments append' => TRUE
       ),
     ),
     'authors' => array(
       'index' => array(
         'help' => 'Returns the index of Authors.',
-        'file' => array('type' => 'inc', 'module' => 'skyword', 'name' => 'authors'),
-        'callback' => 'skyword_authors_index',
-        'access callback' => 'skyword_access',
-        'access arguments' => array('view authors'),
+        'file' => array(
+          'type' => 'inc', 
+          'module' => 'skyword', 
+          'name' => 'resources/authors'
+        ),
+        'callback' => '_skyword_authors_index',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('index authors'),
         'access arguments append' => TRUE,
         'args' => array(
           array(
@@ -52,15 +61,19 @@ function skyword_services_resources() {
             'description' => 'The​ ​number​ ​to​ ​retrieve​ ​per​ ​page.​ ​​ ​Default is​ ​250.',
             'source' => array('path' => 0),
             'optional' => TRUE,
-          )
-        )
+          ),
+        ),
       ),
       'retrieve' => array(
         'help' => 'Returns the index of Authors.',
-        'file' => array('type' => 'inc', 'module' => 'skyword', 'name' => 'authors'),
-        'callback' => 'skyword_authors_get',
-        'access callback' => 'skyword_access',
-        'access arguments' => array('view author'),
+        'file' => array(
+          'type' => 'inc', 
+          'module' => 'skyword', 
+          'name' => 'resources/authors'
+        ),
+        'callback' => '_skyword_authors_get',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('retrieve author'),
         'access arguments append' => TRUE,
         'args' => array(
           array(
@@ -72,26 +85,180 @@ function skyword_services_resources() {
           )
         ),
       ),
-      'create' => array( ),
-      'update' => array( ),
+      'create' => array(
+        'help' => 'Create an Author',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resources/authors',
+        ),
+        'callback' => '_skyword_authors_create',
+        'access callback' => '_skyword_access',
+        'acces arguments' => array('create author'),
+        'access arguments append' => TRUE,
+      ),
+      'update' => array(
+        'help' => 'Update an Author',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resources/authors',
+        ),
+        'callback' => '_skyword_authors_update',
+        'access calback' => '_skyword_access',
+        'access arguments' => array('update author'),
+        'access arguments append' => TRUE,
+      ),
     ),
     'posts' => array(
-      'index' => array( ),
-      'retrieve' => array(),
-      'create' => array( ),
-      'update' => array( ),
+      'index' => array(
+        'help' => 'Get the index of Posts',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resources/posts',
+        ),
+        'callback' => '_skyword_posts_index',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('index posts'),
+        'access arguments append' => TRUE,
+      ),
+      'retrieve' => array(
+        'help' => 'Get a specific post',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resources/posts',
+        ),
+        'callback' => '_skyword_posts_retrieve',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('retrieve post'),
+        'access arguments append' => TRUE,
+      ),
+      'create' => array(
+        'help' => 'Create a post',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resoruces/posts',
+        ),
+        'callback' => '_skyword_posts_crete',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('create post'),
+        'access arguments append' => TRUE,
+      ),
+      'update' => array(
+        'help' => 'Update a post',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resources/posts',
+        ),
+        'callback' => '_skyword_posts_update',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('update post'),
+        'access arguments append' => TRUE,
+      ),
     ),
-    'media' => array(
-      'index' => array( ),
-      'retrieve' => array( ),
-      'create' => array( ),
-      'update' => array( ),
+    'medias' => array(
+      'index' => array(
+        'help' => 'Get the index of medias',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resources/medias',
+        ),
+        'callback' => '_skyword_medias_index',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('index medias'),
+        'access arguments append' => TRUE,
+      ),
+      'retrieve' => array(
+        'help' => 'Retrieve a specific media',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resources/medias',
+        ),
+        'callback' => '_skyword_medias_retrieve',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('retrieve media'),
+        'access arguments append' => TRUE,
+      ),
+      'create' => array(
+        'help' => 'Create a media',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resources/medias',
+        ),
+        'callback' => '_skyword_medias_create',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('create media'),
+        'access arguments append' => TRUE,
+      ),
+      'update' => array(
+        'help' => 'Update a media',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resources/medias',
+        ),
+        'callback' => '_skyword_medias_update',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('update media'),
+        'access arguments append' => TRUE,
+      ),
     ),
     'content-types' => array(
-      'index' => array( ),
-      'retrieve' => array( ),
-      'create' => array( ),
-      'update' => array( ), // Not listed but maybe this is not needed.
+      'index' => array(
+        'help' => 'Return index of content types',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resources/content_types',
+        ),
+        'callback' => '_skyword_content_types_index',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('index content types'),
+        'access arguments append' => TRUE,
+      ),
+      'retrieve' => array(
+        'help' => 'Retrieve a specific content type',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resources/content_types',
+        ),
+        'callback' => '_skyword_content_types_retrieve',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('retrieve content type'),
+        'access arguments append' => TRUE,
+      ),
+      'create' => array(
+        'help' => 'Create a content type',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resources/content_types',
+        ),
+        'callback' => '_skyword_content_types_create',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('create content type'),
+        'access arguments append' => TRUE,
+      ),
+      'update' => array(
+        'help' => 'Update a content type',
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'skyword',
+          'name' => 'resources/content_types',
+        ),
+        'callback' => '_skyword_content_types_update',
+        'access callback' => '_skyword_access',
+        'access arguments' => array('update content type'),
+        'access arguments append' => TRUE,
+      ), // Not listed but maybe this is not needed.
     ),
   );
 }
@@ -110,7 +277,6 @@ function _skyword_access($op, $args) {
       break;
 
     case 'retrieve token':
-      object_log('retrieve token', 'called');
       $access = TRUE;
 
       break;
