@@ -6,4 +6,3 @@ configure = admin/structure/services/skyword
 
 dependencies[] = services
 dependencies[] = services_oauth
-

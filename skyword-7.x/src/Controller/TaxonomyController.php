@@ -20,11 +20,11 @@ class TaxonomyController extends BaseController implements ControllerInterface {
     $data = NULL;
 
     if (count($taxonomies) < $per_page) {
-      $data = $this->buildData($taxonomies); 
+      $data = $this->buildData($taxonomies);
     }
     else {
       $data = $this->buildDataWithCount($per_page, $taxonomies);
-    } 
+    }
 
     if ($fields != NULL) {
       parent::limitOutputByFields($fields, $data);
@@ -151,11 +151,11 @@ class TaxonomyController extends BaseController implements ControllerInterface {
         $obj->description = $taxonomy->description;
         $obj->numTerms = $this->getTaxonomyTermsCount($taxonomy->vid);
 
-        $container[] = $obj; 
-      } 
+        $container[] = $obj;
+      }
 
       return $container;
-    } 
+    }
     else {
       $obj = new stdClass();
       $obj->id = $taxonomies->vid;

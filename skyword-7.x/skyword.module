@@ -5,6 +5,54 @@ define('SKYWORD_VERSION', 1); // Define the version of this api.
 function skyword_init() {}
 
 /**
+ * Implements hook_permission().
+ */
+function skyword_permission() {
+  return array(
+    'administer skyword' => array(
+      'title' => t('Administer Skyword'),
+      'description' => t('Configure and setup Skyword API')
+    )
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function skyword_menu() {
+  $items['admin/config/services/skyword'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('skyword_admin_settings'),
+    'description' => t('Configure Skyword API'),
+    'access arguments' => array('administer skyword'),
+    'file' => 'skyword.admin.inc',
+    'title' => t('Skyword API')
+  );
+
+  $items['admin/structure/types/manage/%/skyword'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('skyword_content_manage', 4),
+    'description' => t('Manage settings for Skyword managed content.'),
+    'access arguments' => array('administer skyword'),
+    'file' => 'skyword.admin.inc',
+    'title' => t('Manage Skyword'),
+    'type' => MENU_LOCAL_TASK
+  );
+
+  $items['admin/structure/taxonomy/%/skyword'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('skyword_vocabulary_manage', 3),
+    'description' => t('Manage settings for Skyword managed content.'),
+    'access arguments' => array('administer skyword'),
+    'file' => 'skyword.admin.inc',
+    'title' => t('Manage Skyword'),
+    'type' => MENU_LOCAL_TASK
+  );
+
+  return $items;
+}
+
+/**
  * Implements hook_services_resources
  */
 function skyword_services_resources() {
@@ -13,26 +61,25 @@ function skyword_services_resources() {
       'retrieve' => array(
         'help' => 'Returns authentication token from this site',
         'file' => array(
-          'type' => 'inc', 
-          'module' => 'token', 
+          'type' => 'inc',
+          'module' => 'skyword',
           'name' => 'resources/token',
         ),
         'callback' => '_skyword_token_retrieve',
         'access callback' => '_skyword_access',
         'access arguments' => array('retrieve token'),
         'access arguments append' => TRUE,
-      ), 
+      ),
     ),
     'version' => array(
-      'retrieve' => array(
+      'index' => array(
         'help' => 'Returns the version of this site.',
         'file' => array(
-          'type' => 'inc', 
-          'module' => 'skyword', 
+          'type' => 'inc',
+          'module' => 'skyword',
           'name' => 'resources/version'
         ),
         'callback' => '_skyword_version_retrieve',
-        'access callback' => 'skyword_access',
         'access arguments' => array('retrieve version'),
         'access arguments append' => TRUE
       ),
@@ -162,8 +209,8 @@ function skyword_services_resources() {
       'index' => array(
         'help' => 'Returns the index of Authors.',
         'file' => array(
-          'type' => 'inc', 
-          'module' => 'skyword', 
+          'type' => 'inc',
+          'module' => 'skyword',
           'name' => 'resources/authors'
         ),
         'callback' => '_skyword_authors_index',
@@ -181,7 +228,7 @@ function skyword_services_resources() {
           array(
             'name' => 'per_page',
             'type' => 'int',
-            'description' => 'The​ ​number​ ​to​ ​retrieve​ ​per​ ​page.​ ​​ ​Default is​ ​250.',
+            'description' => 'The number to retrieve per page. Default is 250.',
             'source' => array('path' => 0),
             'optional' => TRUE,
           ),
@@ -190,8 +237,8 @@ function skyword_services_resources() {
       'retrieve' => array(
         'help' => 'Returns the index of Authors.',
         'file' => array(
-          'type' => 'inc', 
-          'module' => 'skyword', 
+          'type' => 'inc',
+          'module' => 'skyword',
           'name' => 'resources/authors'
         ),
         'callback' => '_skyword_authors_get',
@@ -390,21 +437,57 @@ function skyword_services_resources() {
  * Access callback check for Skyword API Services.
  */
 function _skyword_access($op, $args) {
+  return TRUE;
+
+  // @TODO: Access permissions after functionality.
+
   global $user;
   $access = FALSE;
 
   switch($op) {
     case 'view version':
       $access = TRUE;
-
       break;
 
     case 'retrieve token':
       $access = TRUE;
-
       break;
   }
 
   return $access;
 }
 
+/**
+* Helper function to return all available content types.
+*/
+function _skyword_available_content_types() {
+  $bundles = node_type_get_types();
+  $options = array(
+    -1 => t('Select a content type')
+  );
+  foreach($bundles as $id => $bundle) {
+    $options[$id] = $bundle->name;
+  }
+
+  return $options;
+}
+
+/**
+* Helper function to return all content type related fields.
+*/
+function _skyword_content_type_fields($entity_type = 'node', $bundle = 'author') {
+  $field_options = array(
+    -1 => t('Please Select a field'),
+  );
+
+  $fields = field_info_instances($entity_type, $bundle);
+
+  if ($fields) {
+    foreach($fields as $id => $field) {
+      $info = field_info_field($id);
+      $field_options[$id] = $field['label'];
+    }
+  }
+
+  return $field_options;
+}
