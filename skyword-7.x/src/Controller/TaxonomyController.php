@@ -36,35 +36,91 @@ class TaxonomyController extends BaseController implements ControllerInterface {
   /**
    * Retrieve a specific Taxonomy
    */
-  public function retrieve($id, $fields = NULL) {
-    $taxonomy = taxonomy_vocabulary_lod($id); 
-    $data = $this->buildData($taxonomy);
+  public function retrieve($id, $terms = NULL, $page = 1, $per_page = 250, $fields = NULL) {
+    $taxonomy = taxonomy_vocabulary_load($id);
 
-    if ($fields != NULL) {
-      parent::limitOutputByFields($fields, $data);
+    if (!$terms) {
+      $data = $this->buildData($taxonomy);
+
+      if ($fields != NULL) {
+        parent::limitOutputByFields($fields, $data);
+      }
+
+      return $data;
     }
+    elseif ($terms == 'terms') {
+      $terms = entity_load('taxonomy_term', FALSE, ['vid' => $taxonomy->vid]);
+      $data = NULL;
 
-    return $data;
+      if (count($terms) < $per_page) {
+        $data = $this->buildTermsData($terms);
+      }
+      else {
+        $data = $this->buildDataWithCount($per_page, $terms);
+      }
+
+      if ($fields != NULL) {
+        parent::limitOutputByFields($fields, $data);
+      }
+
+      return $data;
+    }
   }
 
   /**
    * Create a Taxonomy
+   * Create a Taxonomy term if $id and $terms are present
+   *
+   * @param $data
+   *   The post data
+   *   For creating a taxonomy, the post data should contain
+   *   - name
+   *   - description
+   *   For creating a taxonomy term, the post data should contain
+   *   - name
+   * @param $id
+   *   The identifier of the Taxonomy
+   * @param $terms
+   *   Identify if we are creating a taxonomy term
    */
-  public function create($name, $description) {
-    $explodeName = explode(' ', $name);
-    $machineName = implode('_', $explodeName);
+  public function create($data, $id = NULL, $terms = NULL) {
+    if (!$id && !$terms) {
+      $explodeName = explode(' ', $data->name);
+      $machineName = implode('_', $explodeName);
 
-    $taxonomy = new stdClass();
-    $taxonomy->name = $name;
-    $taxonomy->machine_name = $machineName;
-    $taxonomy->description = t($description);
-    $taxonomy->module = 'taxonomy';
+      $taxonomy = new stdClass();
+      $taxonomy->name = $name;
+      $taxonomy->machine_name = $machineName;
+      $taxonomy->description = t($data->description);
+      $taxonomy->module = 'taxonomy';
 
-    try {
-      taxonomy_vocabulary_save($taxonomy);
+      try {
+        taxonomy_vocabulary_save($taxonomy);
+
+        return (object)[
+          'name' => $taxonomy->name,
+          'description' => $taxonomy->description,
+        ];
+      }
+      catch (Exception $e) {
+        throw new Exception("Unable to create a Taxonomy named $name");
+      }
     }
-    catch (Exception $e) {
-      throw new Exception("Unable to create a Taxonomy named $name"); 
+    else {
+      try {
+        $obj = new stdClass();
+        $obj->name = $data->name;
+        $obj->vid = $id;
+        taxonomy_term_save($obj);
+
+        return (object)[
+          'value' => $obj->name,
+          'parent' => $obj->vid,
+        ];
+      }
+      catch(Exception $e) {
+        throw new Exception("Unable to create a new Taxonomy term " . $obj->name);
+      }
     }
   }
 
@@ -112,6 +168,23 @@ class TaxonomyController extends BaseController implements ControllerInterface {
   }
 
   /**
+   * Build the data for taxonomy terms
+   */
+  private function buildTermsData($terms) {
+    $data = [];
+
+    foreach ($terms as $term) {
+      $obj = new stdClass();
+      $obj->id = $term->tid;
+      $obj->value = $term->name;
+
+      $data[] = $obj;
+    }
+
+    return $data;
+  }
+
+  /**
    * Build the data per count
    *
    * @param $per_page
@@ -119,22 +192,38 @@ class TaxonomyController extends BaseController implements ControllerInterface {
    * @param $taxonomies
    *   an array of taxonomies
    */
-  private buildDataWithCount($per_page, $taxonomies) {
+  private function buildDataWithCount($per_page, $dataType) {
     $counter = 0;
     $container = [];
 
-    foreach ($taxonomies as $taxonomy) {
-      if ($counter < $per_page) {
-        $obj = new stdClass();
-        $obj->id = $taxonomy->vid;
-        $obj->name = $taxonomy->name;
-        $obj->description = $taxonomy->description;
-        $obj->numTerms = $this->getTaxonomyTermsCount($taxonomy->vid);
+    if (isset($dataType['taxonomies'])) {
+      foreach ($dataType['taxonomies'] as $taxonomy) {
+        if ($counter < $per_page) {
+          $obj = new stdClass();
+          $obj->id = $taxonomy->vid;
+          $obj->name = $taxonomy->name;
+          $obj->description = $taxonomy->description;
+          $obj->numTerms = $this->getTaxonomyTermsCount($taxonomy->vid);
 
-        $container[] = $obj;
+          $container[] = $obj;
+        }
+
+        $counter++;
       } 
+    }
 
-      $counter++;
+    if (isset($dataType['terms'])) {
+      foreach ($dataType['terms'] as $term) {
+        if ($counter < $per_page) {
+          $obj = new stdClass();
+          $obj->id = $term->tid;
+          $obj->value = $term->name;
+
+          $container[] = $obj;
+        }
+
+        $counter++;
+      }
     }
 
     return $container;
