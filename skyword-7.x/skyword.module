@@ -20,15 +20,6 @@ function skyword_permission() {
  * Implements hook_menu().
  */
 function skyword_menu() {
-  $items['admin/config/services/skyword'] = array(
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('skyword_admin_settings'),
-    'description' => t('Configure Skyword API'),
-    'access arguments' => array('administer skyword'),
-    'file' => 'skyword.admin.inc',
-    'title' => t('Skyword API')
-  );
-
   $items['admin/structure/types/manage/%/skyword'] = array(
     'page callback' => 'drupal_get_form',
     'page arguments' => array('skyword_content_manage', 4),
@@ -458,8 +449,8 @@ function _skyword_access($op, $args) {
 }
 
 /**
-* Helper function to return all available content types.
-*/
+ * Helper function to return all available content types.
+ */
 function _skyword_available_content_types() {
   $bundles = node_type_get_types();
   $options = array(
@@ -473,8 +464,8 @@ function _skyword_available_content_types() {
 }
 
 /**
-* Helper function to return all content type related fields.
-*/
+ * Helper function to return all content type related fields.
+ */
 function _skyword_content_type_fields($entity_type = 'node', $bundle = 'author') {
   $field_options = array(
     -1 => t('Please Select a field'),
@@ -491,3 +482,4 @@ function _skyword_content_type_fields($entity_type = 'node', $bundle = 'author')
 
   return $field_options;
 }
+

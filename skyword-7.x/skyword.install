@@ -77,26 +77,31 @@ function skyword_create_author_type() {
   $author_fields = array(
     'first_name' => array(
       'label' => 'First Name',
+      'description' => 'The first name of the author',
       'type' => 'text',
       'widget_type' => 'text_textfield'
     ),
     'last_name' => array(
       'label' => 'Last Name',
+      'description' => 'The last name of the author',
       'type' => 'text',
       'widget_type' => 'text_textfield',
     ),
     'email' => array(
       'label' => 'E-mail',
+      'description' => 'The email of the author',
       'type' => 'email',
       'widget_type' => 'email_textfield',
     ),
     'byline' => array(
       'label' => 'Byline',
+      'description' => 'The complete name of the author',
       'type' => 'text',
       'widget_type' => 'text_textfield',
     ),
     'icon' => array(
       'label' => 'Icon',
+      'description' => 'The image icon of the author',
       'type' => 'image',
       'widget_type' => 'image_image',
     ),
