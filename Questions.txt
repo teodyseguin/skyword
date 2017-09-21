@@ -8,4 +8,18 @@
   to build this out. https://www.drupal.org/project/rest_server_ip_filtering provides this
   functionality.
 
-- 
+- Taxonomy/ Content in general:
+  How much of the site will be controlled by Skyword, and how much freedom does the site owner
+  have in regards to setting what taxonomy / author /etc they want on the site?
+
+  Is there a way we can tell Skyword that a specific taxonomy, author, post, etc is deleted by the
+  site owner (maybe to prevent re-importing it)?
+
+  Phase 1 - Basic Functionality, Skyword controls the site it is installed on
+     ie, creating content, taxonomies, etc.
+
+  Phase 2 - Advanced Functionality, Skyword obeys mappings created by admin users.
+    Allowing the admin user to create and map the taxonomies, content, authors to content or entities.
+
+  Phase 3 - Drupal 8 Basic functionality, and upgrade path from Drupal 7.
+  

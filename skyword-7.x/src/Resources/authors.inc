@@ -2,6 +2,7 @@
 
 /**
 * Resource callback for a single author.
+* --- Needs to be users that are not enabled for login
 */
 function _skyword_authors_get($id) {
   $results = skyword_author_load_multiple(array(intval($id)));

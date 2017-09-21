@@ -4,7 +4,6 @@
 * - Returns the site version number to the Skyword Service.
 */
 function _skyword_version_retrieve() {
-  drupal_set_message('called');
   try {
     return (object) array(
       'version' => SKYWORD_VERSION,
