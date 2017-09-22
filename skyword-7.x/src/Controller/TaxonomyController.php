@@ -3,7 +3,7 @@
 include 'BaseController.php';
 include 'ControllerInterface.php';
 
-class TaxonomyController extends BaseController implements ControllerInterface {
+class TaxonomyController extends BaseController {
 
   /**
    * Returns a list of Taxonomies
@@ -16,21 +16,22 @@ class TaxonomyController extends BaseController implements ControllerInterface {
    *   determines the field names to be included on the data. default to NULL
    */
   public function index($page = 1, $per_page = 250, $fields = NULL) {
-    $taxonomies = taxonomy_get_vocabularies();
-    $data = NULL;
-
-    if (count($taxonomies) < $per_page) {
-      $data = $this->buildData($taxonomies);
+    $query = db_select('taxonomy_vocabulary', 'v');
+    $query->join('skyword_entities', 'e', 'e.bundle = v.machine_name');
+    $query->condition('e.status', 1);
+    $start = ($page-1) * $per_page;
+    $end = $page * $per_page;
+    $query->fields('v', ['machine_name'])
+      ->fields('e', ['data'])
+      ->range($start, $end);
+    $results = $query->execute();
+    $rows = array();
+    foreach($results as $row) {
+      $row->data = unserialize($row->data);
+      $rows[] = $row;
     }
-    else {
-      $data = $this->buildDataWithCount($per_page, $taxonomies, 'taxonomies');
-    }
 
-    if ($fields != NULL) {
-      parent::limitOutputByFields($fields, $data);
-    }
-
-    return $data;
+    return $rows;
   }
 
   /**
@@ -243,4 +244,3 @@ class TaxonomyController extends BaseController implements ControllerInterface {
     return db_query("SELECT * FROM {taxonomy_term_data} WHERE vid = :vid", [':vid' => $vid])->rowCount();
   }
 }
-

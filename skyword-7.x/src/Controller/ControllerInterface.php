@@ -7,4 +7,3 @@ interface ControllerInterface {
   public function update();
   public function delete();
 }
-

@@ -6,21 +6,6 @@
  * - Optionally? Create content types or discover existing ones and prompt admin.
  */
 
-/**
- * Implements hook_install().
- */
-function skyword_install() {
-  drupal_install_schema('skyword');
-}
-
-/**
- * Implements hook_uninstall().
- */
-function skyword_uninstall() {
-  if (db_table_exists('skyword_entities')) {
-    drupal_uninstall_schema('skyword');
-  }
-}
 
 /**
  * Implements hook_schema().
@@ -53,9 +38,24 @@ function skyword_schema() {
           'type' => 'int',
           'default' => 0,
         ),
+        'data' => array(
+          'description' => 'Stores field mapping information for this entity type.',
+          'type' => 'text'
+        ),
       ),
       'primary key' => array('id'),
+      'unique keys' => array(
+        'entity_bundle' => array('entity_type', 'bundle'),
+      ),
     ),
   );
 }
 
+
+function skyword_update_7001() {
+  $field = array(
+    'description' => 'Stores field mapping information for this entity type.',
+    'type' => 'text'
+  );
+  db_add_field('skyword_entities', 'data', $field);
+}

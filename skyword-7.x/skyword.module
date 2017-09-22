@@ -64,10 +64,6 @@ function skyword_theme() {
       'render element' => 'form',
       'file' => 'skyword.theme.inc',
     ),
-    'skyword_vocabulary_manage' => array(
-      'render element' => 'form',
-      'file' => 'skyword.theme.inc',
-    ),
   );
 }
 
@@ -79,7 +75,7 @@ function skyword_theme() {
 function _skyword_access($op, $args) {
   global $user;
   $access = FALSE;
-
+  return TRUE;
   switch($op) {
     case 'token retrieve':
       $access = user_access('token retrieve', $user) ? TRUE : FALSE;
@@ -151,6 +147,7 @@ function skyword_services_resources() {
           'name' => 'src/Resources/version'
         ),
         'callback' => '_skyword_version_retrieve',
+        'access callback' => TRUE,
         'access arguments' => array('version retrieve'),
         'access arguments append' => TRUE
       ),
@@ -161,10 +158,10 @@ function skyword_services_resources() {
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/taxonomies',
+          'name' => 'src/Resources/taxonomies',
         ),
         'callback' => '_skyword_taxonomies_index',
-        'access callback' => 'skywrod_access',
+        'access callback' => '_skyword_access',
         'access arguments' => array('index taxonomies'),
         'access arguments append' => TRUE,
         'args' => array(
@@ -185,7 +182,7 @@ function skyword_services_resources() {
           array(
             'name' => 'fields',
             'type' => 'string',
-            'description' => 'A comma separated list of fields to include.', 
+            'description' => 'A comma separated list of fields to include.',
             'source' => array('param' => 'fields'),
             'optional' => TRUE,
           ),
@@ -196,10 +193,10 @@ function skyword_services_resources() {
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/taxonomies',
+          'name' => 'src/Resources/taxonomies',
         ),
         'callback' => '_skyword_taxonomies_retrieve',
-        'access callback' => 'skyword_access',
+        'access callback' => '_skyword_access',
         'access arguments' => array('retrieve taxonomy'),
         'access arguments append' => TRUE,
         'args' => array(
@@ -245,12 +242,12 @@ function skyword_services_resources() {
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/taxonomies',
+          'name' => 'src/Resources/taxonomies',
         ),
         'callback' => '_skyword_taxonomies_create',
         'access callback' => 'skyword_access',
         'access arguments' => array('create taxonomy'),
-        'access arguments append' => TRUE, 
+        'access arguments append' => TRUE,
         'args' => array(
           array(
             'name' => 'data',
@@ -539,3 +536,18 @@ function _skyword_content_type_fields($entity_type = 'node', $bundle = 'author')
   return $field_options;
 }
 
+
+/**
+*
+*/
+function skyword_entity_data($entity_type, $bundle) {
+  $query = db_select('skyword_entities', 's')
+    ->fields('s')
+    ->condition('s.entity_type', $entity_type)
+    ->condition('s.bundle', $bundle);
+  $result = $query->execute()->fetchAssoc();
+  if (isset($result['data'])) {
+    $result['data'] = unserialize($result['data']);
+  }
+  return $result;
+}
