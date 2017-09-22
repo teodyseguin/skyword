@@ -15,19 +15,28 @@ class TaxonomyController extends BaseController {
    * @param $fields
    *   determines the field names to be included on the data. default to NULL
    */
-  public function index($page = 1, $per_page = 250, $fields = NULL) {
+  public function index($page = 1, $per_page = 250, $fields = NULL, $id = NULL) {
     $query = db_select('taxonomy_vocabulary', 'v');
     $query->join('skyword_entities', 'e', 'e.bundle = v.machine_name');
+    $query->leftJoin('taxonomy_term_data', 'term', 'term.vid = v.vid');
     $query->condition('e.status', 1);
+
+    if ($id !== NULL) {
+        $query->condition('v.vid', $id);
+    }
+
+    $query->fields('v', ['vid' => 'id', 'machine_name' => 'name', 'description' => 'description']);
+
     $start = ($page-1) * $per_page;
     $end = $page * $per_page;
-    $query->fields('v', ['machine_name'])
-      ->fields('e', ['data'])
-      ->range($start, $end);
+
     $results = $query->execute();
     $rows = array();
     foreach($results as $row) {
-      $row->data = unserialize($row->data);
+      $numTerms = db_select('taxonomy_term_data')
+        ->condition('vid', $row->id)
+        ->countQuery()->execute()->fetchField();
+      $row->numTerms = $numTerms;
       $rows[] = $row;
     }
 

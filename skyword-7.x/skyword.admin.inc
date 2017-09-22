@@ -5,6 +5,10 @@
  */
 function skyword_vocabulary_manage($form, &$form_state, $vocabulary = 'tags') {
   $data = skyword_entity_data('taxonomy_term', $vocabulary);
+  $form['id'] = array(
+    '#type' => 'value',
+    '#value' => $data['id']
+  );
   
   $form['vocabulary'] = array(
     '#type' => 'value',
@@ -71,8 +75,14 @@ function skyword_vocabulary_manage($form, &$form_state, $vocabulary = 'tags') {
  * Implements hook_submit().
  */
 function skyword_vocabulary_manage_submit($form, &$form_state) {
+
+  // @TODO this is not properly creating / removing values...... remove db_delete when we sort this out....
   $vocabulary = $form_state['values']['vocabulary'];
-  // we do upsert (update/insert) for the status
+  db_delete('skyword_entities')
+    ->condition('entity_type','taxonomy_term')
+    ->condition('bundle', $form_state['values']['vocabulary'])
+    ->execute();
+
   db_merge('skyword_entities')
     ->key(array(
       'entity_type' => 'taxonomy_term',
