@@ -1,19 +1,61 @@
 <?php
 
 /**
-* Implements hook_install.
-* - We want to create the /skyword/publish/v1 endpoint for all other resources.
-* - Optionally? Create content types or discover existing ones and prompt admin.
-*/
-function skyword_install () {
+ * Implements hook_install.
+ * - We want to create the /skyword/publish/v1 endpoint for all other resources.
+ * - Optionally? Create content types or discover existing ones and prompt admin.
+ */
 
-  // We need to create the Author content type....
-  $author_exists = node_type_load('author');
-  if (!$author_exists) {
-    // Programmatically create the author and
-    // Set the initial variable values for the fields
-
-    
-  }
-
+/**
+ * Implements hook_install().
+ */
+function skyword_install() {
+  drupal_install_schema('skyword');
 }
+
+/**
+ * Implements hook_uninstall().
+ */
+function skyword_uninstall() {
+  if (db_table_exists('skyword_entities')) {
+    drupal_uninstall_schema('skyword');
+  }
+}
+
+/**
+ * Implements hook_schema().
+ */
+function skyword_schema() {
+  return array(
+    'skyword_entities' => array(
+      'description' => 'Store which entities are enabled for skyword use',
+      'fields' => array(
+        'id' => array(
+          'description' => 'The primary identifier of the entity',
+          'type' => 'serial',
+          'unassigned' => TRUE,
+          'not null' => TRUE
+        ),
+        'entity_type' => array(
+          'description' => 'The type of entity',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'bundle' => array(
+          'description' => 'The bundle type of the entity e.g. node type, vocabulary, terms.',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'status' => array(
+          'description' => 'Determine if the entity is enabled or not for skyword use',
+          'type' => 'int',
+          'default' => 0,
+        ),
+      ),
+      'primary key' => array('id'),
+    ),
+  );
+}
+
