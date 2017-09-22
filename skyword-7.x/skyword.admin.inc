@@ -9,7 +9,7 @@ function skyword_vocabulary_manage($form, &$form_state, $vocabulary = 'tags') {
     '#type' => 'value',
     '#value' => $data['id']
   );
-  
+
   $form['vocabulary'] = array(
     '#type' => 'value',
     '#value' => $vocabulary
@@ -59,6 +59,8 @@ function skyword_vocabulary_manage($form, &$form_state, $vocabulary = 'tags') {
       $field['required'] ? t('Yes') : t('No'),
       array('data' => &$status )
     );
+    unset($status);
+    unset($id);
   }
 
   $form['submit'] = array(
@@ -101,52 +103,70 @@ function skyword_vocabulary_manage_submit($form, &$form_state) {
  * Configure system for Skyword managed content types.
  */
 function skyword_content_manage($form, &$form_state, $content_type = 'page') {
+  $data = skyword_entity_data('node', $content_type);
+
+  $form['id'] = array(
+    '#type' => 'value',
+    '#value' => $data['id']
+  );
+
+  $form['content_type'] = array(
+    '#type' => 'value',
+    '#value' => $content_type
+  );
+
   $form['skyword_status'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable this content type for skyword use.'),
-    '#default_value' => skyword_get_status($content_type),
+    '#default_value' => $data['status'],
   );
 
   $form['description'] = array(
     '#markup' => '<p>Then choose which field you like to be enabled from this content type.</p>',
   );
 
+  $form['data'] = array(
+    '#type' => 'fieldset',
+    '#tree' => TRUE,
+  );
+
+  $form['data']['fields'] = array(
+    '#theme' => 'table',
+    '#header' => array(
+      array('data' => t('Field')),
+      array('data' => t('Description')),
+      array('data' => t('Required')),
+      array('data' => t('Status'))
+    ),
+    '#rows' => array()
+  );
+
   // get fields to send to skyword
   $fields = field_info_instances('node', $content_type);
+  foreach ($fields as $id => $field) {
 
-  $options = array();
-  $default_values = array();
-
-  foreach($fields as $id => $field) {
-    $options[$id] = '';
-
-    $form['rows'][$id]['field'] = array(
-      '#markup' => $field['label'],
+    $enable = array(
+      '#type' => 'checkbox',
+      '#default_value' => isset($data['data'][$id]) ? $data['data'][$id]['status'] : 0
     );
 
-    $form['rows'][$id]['description'] = array(
-      '#markup' => $field['description'],
+    $form['data']['fields'][$id]['status'] = &$enable;
+
+    $form['data']['fields']['#rows'][$id] = array(
+      array('data' => $field['label']),
+      array('data' => $field['description']),
+      array('data' => $field['required'] ? t('Yes') : t('No') ),
+      array('data' => &$enable )
     );
 
-    $form['rows'][$id]['required'] = array(
-      '#markup' => $field['required'] ? t('Yes') : t('No'),
-    );
-
-    $default_values[] = variable_get('skyword_' . $content_type . '_' . $id, '');
+    unset($enable);
+    unset($id);
   }
-
-  $form['checkboxes'] = array(
-    '#type' => 'checkboxes',
-    '#options' => $options,
-    '#default_value' => $default_values,
-  );
 
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save')
   );
-
-  $form_state['content_type'] = $content_type;
 
   return $form;
 }
@@ -155,31 +175,109 @@ function skyword_content_manage($form, &$form_state, $content_type = 'page') {
  * Implements hook_submit().
  */
 function skyword_content_manage_submit($form, &$form_state) {
-  $content_type = $form_state['content_type'];
-
-  // we do upsert (update/insert) for the status
-  db_merge('skyword_entities')
-    ->key(array('entity_type' => $form_state['content_type']))
-    ->fields(array(
-      'bundle' => 'node',
-      'status' => $form_state['values']['skyword_status'],
-    ))
+  $content_type = $form_state['values']['content_type'];
+  db_delete('skyword_entities')
+    ->condition('entity_type', 'node')
+    ->condition('bundle', $content_type)
     ->execute();
 
-  // save which enabled fields are chosen
-  foreach ($form_state['values']['checkboxes'] as $id => $value) {
-    variable_set('skyword_' . $content_type . '_' . $id, $value);
-  }
+  db_merge('skyword_entities')
+    ->key(array(
+      'entity_type' => 'node',
+      'bundle' => $content_type
+    ))
+    ->fields(array(
+      'entity_type' => 'node',
+      'bundle' => $content_type,
+      'status' => $form_state['input']['skyword_status'],
+      'data' => serialize($form_state['input']['data']['fields'])
+    ))
+    ->execute();
 }
 
+
 /**
- * Get the status of the entity type
- *
- * @param $entity_type
- *   the type of entity stored
- *
- * @return status 0 || 1
- */
-function skyword_get_status($entity_type) {
-  return db_query("SELECT status FROM {skyword_entities} WHERE entity_type = :entity_type", array(':entity_type' => $entity_type))->fetchField();
+* Configure system for Skyword managed users.
+*/
+function skyword_user_manage($form, &$form_state) {
+  $roles = user_roles();
+  unset($roles[1]);
+  $data = skyword_entity_data('user', 'user');
+  
+  $form['role'] = array(
+    '#type' => 'select',
+    '#title' => t('Skyword Author Role'),
+    '#options' => $roles,
+    '#default_value' => isset($data['data']['role']) ? $data['data']['role'] : 2,
+  );
+
+  $form['data'] = array(
+    '#type' => 'fieldset',
+    '#tree' => TRUE,
+  );
+
+  $form['data']['fields'] = array(
+    '#theme' => 'table',
+    '#header' => array(
+      array('data' => t('Field')),
+      array('data' => t('Description')),
+      array('data' => t('Required')),
+      array('data' => t('Status'))
+    ),
+    '#rows' => array()
+  );
+
+  // get fields to send to skyword
+  $fields = field_info_instances('user', 'user');
+
+
+  foreach ($fields as $id => $field) {
+    $enable = array(
+      '#type' => 'checkbox',
+      '#default_value' => isset($data['data']['fields'][$id]) ? $data['data']['fields'][$id]['status'] : 0
+    );
+
+    $form['data']['fields'][$id]['status'] = &$enable;
+
+    $form['data']['fields']['#rows'][$id] = array(
+      array('data' => $field['label']),
+      array('data' => $field['description']),
+      array('data' => $field['required'] ? t('Yes') : t('No') ),
+      array('data' => &$enable )
+    );
+
+    unset($enable);
+    unset($id);
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save')
+  );
+
+  return $form;
+}
+
+function skyword_user_manage_submit($form, &$form_state) {
+
+  db_delete('skyword_entities')
+    ->condition('entity_type', 'user')
+    ->condition('bundle', 'user')
+    ->execute();
+
+  $data['fields'] = $form_state['input']['data']['fields'];
+  $data['role'] = $form_state['values']['role'];
+
+  db_merge('skyword_entities')
+    ->key(array(
+      'entity_type' => 'user',
+      'bundle' => 'user'
+    ))
+    ->fields(array(
+      'entity_type' => 'user',
+      'bundle' => 'user',
+      'status' => 1,
+      'data' => serialize($data)
+    ))
+    ->execute();
 }

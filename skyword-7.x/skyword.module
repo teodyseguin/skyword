@@ -52,6 +52,16 @@ function skyword_menu() {
     'type' => MENU_LOCAL_TASK
   );
 
+  $items['admin/config/people/accounts/skyword'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('skyword_user_manage', 3),
+    'description' => t('Manage settings for Skyword managed users.'),
+    'access arguments' => array('administer skyword'),
+    'file' => 'skyword.admin.inc',
+    'title' => t('Manage Skyword'),
+    'type' => MENU_LOCAL_TASK
+  );
+
   return $items;
 }
 
@@ -59,12 +69,7 @@ function skyword_menu() {
  * Implements hook_theme().
  */
 function skyword_theme() {
-  return array(
-    'skyword_content_manage' => array(
-      'render element' => 'form',
-      'file' => 'skyword.theme.inc',
-    ),
-  );
+  return array( );
 }
 
 /**
