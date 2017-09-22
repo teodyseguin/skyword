@@ -44,6 +44,22 @@ function skyword_menu() {
 }
 
 /**
+ * Implements hook_theme().
+ */
+function skyword_theme() {
+  return array(
+    'skyword_content_manage' => array(
+      'render element' => 'form',
+      'file' => 'skyword.theme.inc',
+    ),
+    'skyword_vocabulary_manage' => array(
+      'render element' => 'form',
+      'file' => 'skyword.theme.inc',
+    ),
+  );
+}
+
+/**
  * Implements hook_services_resources
  */
 function skyword_services_resources() {
