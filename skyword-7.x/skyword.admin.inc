@@ -64,24 +64,30 @@ function skyword_content_manage($form, &$form_state, $content_type = 'page') {
   $fields = field_info_instances('node', $content_type);
 
   $options = array();
+  $default_values = array();
 
   foreach($fields as $id => $field) {
-    $options[$id] = array(
-      'name' => $field['label'],
-      'description' => $field['description'],
-      'required' => $field['required'] ? t('Yes') : t('No'),
+    $options[$id] = '';
+
+    $form['rows'][$id]['field'] = array(
+      '#markup' => $field['label'],
     );
+
+    $form['rows'][$id]['description'] = array(
+      '#markup' => $field['description'],
+    );
+
+    $form['rows'][$id]['required'] = array(
+      '#markup' => $field['required'] ? t('Yes') : t('No'),
+    );
+
+    $default_values[] = variable_get("skyword_$id", '');
   }
 
-  $form['fields'] = array(
-    '#type' => 'tableselect',
-    '#header' => array(
-      'name' => t('Fields'),
-      'description' => t('Description'),
-      'required' => t('Required'),
-    ),
+  $form['checkboxes'] = array(
+    '#type' => 'checkboxes',
     '#options' => $options,
-    '#multiple' => TRUE,
+    '#default_value' => $default_values,
   );
 
   $form['submit'] = array(
@@ -89,10 +95,27 @@ function skyword_content_manage($form, &$form_state, $content_type = 'page') {
     '#value' => t('Save')
   );
 
+  $form_state['content_type'] = $content_type;
+
   return $form;
 }
 
+/**
+ * Implements hook_submit().
+ */
 function skyword_content_manage_submit($form, &$form_state) {
-  object_log('skyword content manage', $form_state);
+  // we do upsert (update/insert) for the status
+  db_merge('skyword_entities')
+    ->key(array('entity_type' => $form_state['content_type']))
+    ->fields(array(
+      'bundle' => 'node',
+      'status' => $form_state['values']['skyword_status'],
+    ))
+    ->execute();
+
+  // save which enabled fields are chosen
+  foreach ($form_state['values']['checkboxes'] as $id => $value) {
+    variable_set("skyword_$id", $value);
+  }
 }
 
