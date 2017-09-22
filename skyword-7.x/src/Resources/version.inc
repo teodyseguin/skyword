@@ -1,8 +1,8 @@
 <?php
 
 /**
-* - Returns the site version number to the Skyword Service.
-*/
+ * - Returns the site version number to the Skyword Service.
+ */
 function _skyword_version_retrieve() {
   try {
     return (object) array(

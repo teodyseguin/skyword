@@ -23,7 +23,7 @@ class TaxonomyController extends BaseController implements ControllerInterface {
       $data = $this->buildData($taxonomies);
     }
     else {
-      $data = $this->buildDataWithCount($per_page, $taxonomies);
+      $data = $this->buildDataWithCount($per_page, $taxonomies, 'taxonomies');
     }
 
     if ($fields != NULL) {
@@ -56,7 +56,7 @@ class TaxonomyController extends BaseController implements ControllerInterface {
         $data = $this->buildTermsData($terms);
       }
       else {
-        $data = $this->buildDataWithCount($per_page, $terms);
+        $data = $this->buildDataWithCount($per_page, $terms, 'terms');
       }
 
       if ($fields != NULL) {
@@ -192,38 +192,42 @@ class TaxonomyController extends BaseController implements ControllerInterface {
    * @param $taxonomies
    *   an array of taxonomies
    */
-  private function buildDataWithCount($per_page, $dataType) {
+  private function buildDataWithCount($per_page, $data, $type) {
     $counter = 0;
     $container = [];
 
-    if (isset($dataType['taxonomies'])) {
-      foreach ($dataType['taxonomies'] as $taxonomy) {
-        if ($counter < $per_page) {
-          $obj = new stdClass();
-          $obj->id = $taxonomy->vid;
-          $obj->name = $taxonomy->name;
-          $obj->description = $taxonomy->description;
-          $obj->numTerms = $this->getTaxonomyTermsCount($taxonomy->vid);
+    switch ($type) {
+      case 'taxonomies':
+        foreach ($data as $taxonomy) {
+          if ($counter < $per_page) {
+            $obj = new stdClass();
+            $obj->id = $taxonomy->vid;
+            $obj->name = $taxonomy->name;
+            $obj->description = $taxonomy->description;
+            $obj->numTerms = $this->getTaxonomyTermsCount($taxonomy->vid);
 
-          $container[] = $obj;
+            $container[] = $obj;
+          }
+
+          $counter++;
         }
 
-        $counter++;
-      } 
-    }
+        break;
 
-    if (isset($dataType['terms'])) {
-      foreach ($dataType['terms'] as $term) {
-        if ($counter < $per_page) {
-          $obj = new stdClass();
-          $obj->id = $term->tid;
-          $obj->value = $term->name;
+      case 'terms':
+        foreach ($data as $term) {
+          if ($counter < $per_page) {
+            $obj = new stdClass();
+            $obj->id = $term->tid;
+            $obj->value = $term->name;
 
-          $container[] = $obj;
+            $container[] = $obj;
+          }
+
+          $counter++;
         }
 
-        $counter++;
-      }
+        break;
     }
 
     return $container;

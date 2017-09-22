@@ -12,7 +12,19 @@ function skyword_permission() {
     'administer skyword' => array(
       'title' => t('Administer Skyword'),
       'description' => t('Configure and setup Skyword API')
-    )
+    ),
+    'token retrieve' => array(
+      'title' => t('Allow to retrieve authentication token'),
+      'description' => t('Return an authentication token'),
+    ),
+    'version retrieve' => array(
+      'title' => t('Allow to retrieve the cms version'),
+      'description' => t('Return the version of cms')
+    ),
+    'taxonomies retrieve' => array(
+      'title' => t('Allow to retrieve a list taxonomies'),
+      'description' => t('Return a list of taxonomies')
+    ),
   );
 }
 
@@ -60,22 +72,74 @@ function skyword_theme() {
 }
 
 /**
+ * Access callback check for Skyword API Services.
+ *
+ * @TODO need to configure this later for user permissions
+ */
+function _skyword_access($op, $args) {
+  global $user;
+  $access = FALSE;
+
+  switch($op) {
+    case 'token retrieve':
+      $access = user_access('token retrieve', $user) ? TRUE : FALSE;
+      break;
+
+    case 'version retrieve':
+      $access = user_access('version retrieve', $user) ? TRUE : FALSE;
+      break;
+  }
+
+  return $access;
+}
+
+/**
  * Implements hook_services_resources
  */
 function skyword_services_resources() {
   return array(
     'token' => array(
-      'retrieve' => array(
+      'index' => array(
         'help' => 'Returns authentication token from this site',
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/token',
+          'name' => 'src/Resources/token',
         ),
         'callback' => '_skyword_token_retrieve',
         'access callback' => '_skyword_access',
-        'access arguments' => array('retrieve token'),
+        'access arguments' => array('token retrieve'),
         'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'client_id',
+            'type' => 'string',
+            'description' => 'The client ID',
+            'source' => array('param' => 'client_id'),
+            'optional' => FALSE,
+          ),
+          array(
+            'name' => 'client_secret',
+            'type' => 'string',
+            'description' => 'The secret client code',
+            'source' => array('param' => 'client_secret'),
+            'optional' => FALSE,
+          ),
+          array(
+            'name' => 'grant_type',
+            'type' => 'string',
+            'description' => 'The grant type',
+            'source' => array('param' => 'grant_type'),
+            'optional' => FALSE,
+          ),
+          array(
+            'name' => 'scope',
+            'type' => 'string',
+            'description' => 'The scope word',
+            'source' => array('param' => 'scope'),
+            'optional' => FALSE,
+          ),
+        ),
       ),
     ),
     'version' => array(
@@ -84,10 +148,10 @@ function skyword_services_resources() {
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/version'
+          'name' => 'src/Resources/version'
         ),
         'callback' => '_skyword_version_retrieve',
-        'access arguments' => array('retrieve version'),
+        'access arguments' => array('version retrieve'),
         'access arguments append' => TRUE
       ),
     ),
@@ -438,30 +502,6 @@ function skyword_services_resources() {
       ), // Not listed but maybe this is not needed.
     ),
   );
-}
-
-/**
- * Access callback check for Skyword API Services.
- */
-function _skyword_access($op, $args) {
-  return TRUE;
-
-  // @TODO: Access permissions after functionality.
-
-  global $user;
-  $access = FALSE;
-
-  switch($op) {
-    case 'view version':
-      $access = TRUE;
-      break;
-
-    case 'retrieve token':
-      $access = TRUE;
-      break;
-  }
-
-  return $access;
 }
 
 /**
