@@ -5,25 +5,26 @@
  * - We want to create the /skyword/publish/v1 endpoint for all other resources.
  * - Optionally? Create content types or discover existing ones and prompt admin.
  */
+
+/**
+ * Implements hook_install().
+ */
 function skyword_install() {
-  // We need to create the Author content type....
-  $author_type = node_type_load('author');
-
-  if (!$author_type) {
-    // Programmatically create the author and
-    // Set the initial variable values for the fields
-    skyword_create_author_type();
-  }
-
   drupal_install_schema('skyword');
 }
 
+/**
+ * Implements hook_uninstall().
+ */
 function skyword_uninstall() {
   if (db_table_exists('skyword_entities')) {
     drupal_uninstall_schema('skyword');
   }
 }
 
+/**
+ * Implements hook_schema().
+ */
 function skyword_schema() {
   return array(
     'skyword_entities' => array(
@@ -56,75 +57,5 @@ function skyword_schema() {
       'primary key' => array('id'),
     ),
   );
-}
-
-/**
- * Creates the Author content type programmatically
- */
-function skyword_create_author_type() {
-  $author_type = array(
-    'type' => 'author',
-    'name' => t('Author'),
-    'base' => 'node_content',
-    'description' => t('Content type Author'),
-    'custom' => 1,
-    'modified' => 1,
-    'locked' => 0,
-  );
-
-  $author_type = node_type_set_defaults($author_type);
-
-  $author_fields = array(
-    'first_name' => array(
-      'label' => 'First Name',
-      'type' => 'text',
-      'widget_type' => 'text_textfield'
-    ),
-    'last_name' => array(
-      'label' => 'Last Name',
-      'type' => 'text',
-      'widget_type' => 'text_textfield',
-    ),
-    'email' => array(
-      'label' => 'E-mail',
-      'type' => 'email',
-      'widget_type' => 'email_textfield',
-    ),
-    'byline' => array(
-      'label' => 'Byline',
-      'type' => 'text',
-      'widget_type' => 'text_textfield',
-    ),
-    'icon' => array(
-      'label' => 'Icon',
-      'type' => 'image',
-      'widget_type' => 'image_image',
-    ),
-  );
-
-  foreach ($author_fields as $field => $info) {
-    ${'field_' . $field} = array(
-      'field_name' => $field,
-      'type' => $info['type'],
-      'entity_types' => array('node'),
-    );
-
-    ${'field_' . $field} = field_create_field(${'field_' . $field});
-
-    $instance = array(
-        'field_name' => $field,
-        'entity_type' => 'node',
-        'bundle' => 'author',
-        'label' => t($info['label']),
-        'widget' => array(
-          'type' => $info['widget_type'],
-        ),
-    );
-
-    $instance = field_create_instance($instance);
-
-    node_type_save($author_type);
-    node_add_body_field($author_type);
-  }
 }
 
