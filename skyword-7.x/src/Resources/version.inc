@@ -3,7 +3,7 @@
 /**
  * - Returns the site version number to the Skyword Service.
  */
-function _skyword_version_retrieve() {
+function _skyword_version_index() {
   try {
     return (object) array(
       'version' => SKYWORD_VERSION,

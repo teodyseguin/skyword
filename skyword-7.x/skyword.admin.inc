@@ -77,15 +77,10 @@ function skyword_vocabulary_manage($form, &$form_state, $vocabulary = 'tags') {
  * Implements hook_submit().
  */
 function skyword_vocabulary_manage_submit($form, &$form_state) {
-
-  // @TODO this is not properly creating / removing values...... remove db_delete when we sort this out....
   $vocabulary = $form_state['values']['vocabulary'];
-  db_delete('skyword_entities')
-    ->condition('entity_type','taxonomy_term')
-    ->condition('bundle', $form_state['values']['vocabulary'])
-    ->execute();
 
-  db_merge('skyword_entities')
+  try {
+    db_merge('skyword_entities')
     ->key(array(
       'entity_type' => 'taxonomy_term',
       'bundle' => $form_state['values']['vocabulary']
@@ -97,6 +92,10 @@ function skyword_vocabulary_manage_submit($form, &$form_state) {
       'data' => serialize($form_state['input']['data']['fields'])
     ))
     ->execute();
+  }
+  catch (Exception $e) {
+    throw new Exception('Unable to update skyword_entities table', $e);
+  }
 }
 
 /**
@@ -176,12 +175,9 @@ function skyword_content_manage($form, &$form_state, $content_type = 'page') {
  */
 function skyword_content_manage_submit($form, &$form_state) {
   $content_type = $form_state['values']['content_type'];
-  db_delete('skyword_entities')
-    ->condition('entity_type', 'node')
-    ->condition('bundle', $content_type)
-    ->execute();
 
-  db_merge('skyword_entities')
+  try {
+    db_merge('skyword_entities')
     ->key(array(
       'entity_type' => 'node',
       'bundle' => $content_type
@@ -193,12 +189,16 @@ function skyword_content_manage_submit($form, &$form_state) {
       'data' => serialize($form_state['input']['data']['fields'])
     ))
     ->execute();
+  }
+  catch (Exception $e) {
+    throw new Exception('Unable to update skyword_entities table', $e);
+  }
 }
 
 
 /**
-* Configure system for Skyword managed users.
-*/
+ * Configure system for Skyword managed users.
+ */
 function skyword_user_manage($form, &$form_state) {
   $roles = user_roles();
   unset($roles[1]);
@@ -230,7 +230,6 @@ function skyword_user_manage($form, &$form_state) {
   // get fields to send to skyword
   $fields = field_info_instances('user', 'user');
 
-
   foreach ($fields as $id => $field) {
     $enable = array(
       '#type' => 'checkbox',
@@ -259,16 +258,11 @@ function skyword_user_manage($form, &$form_state) {
 }
 
 function skyword_user_manage_submit($form, &$form_state) {
-
-  db_delete('skyword_entities')
-    ->condition('entity_type', 'user')
-    ->condition('bundle', 'user')
-    ->execute();
-
   $data['fields'] = $form_state['input']['data']['fields'];
   $data['role'] = $form_state['values']['role'];
 
-  db_merge('skyword_entities')
+  try {
+    db_merge('skyword_entities')
     ->key(array(
       'entity_type' => 'user',
       'bundle' => 'user'
@@ -280,4 +274,9 @@ function skyword_user_manage_submit($form, &$form_state) {
       'data' => serialize($data)
     ))
     ->execute();
+  }
+  catch (Exception $e) {
+    throw new Exception('Unable to update skyword_entities table', $e);
+  }
 }
+

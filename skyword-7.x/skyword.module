@@ -19,11 +19,15 @@ function skyword_permission() {
     ),
     'version retrieve' => array(
       'title' => t('Allow to retrieve the cms version'),
-      'description' => t('Return the version of cms')
+      'description' => t('Return the version of cms'),
     ),
     'taxonomies retrieve' => array(
-      'title' => t('Allow to retrieve a list taxonomies'),
-      'description' => t('Return a list of taxonomies')
+      'title' => t('Allow to retrieve a list taxonomies or specific taxonomy'),
+      'description' => t('Return a list of taxonomies'),
+    ),
+    'taxonomy create' => array(
+      'title' => t('Allow to create a taxonomy'),
+      'description' => t('Create a taxonomy'),
     ),
   );
 }
@@ -66,28 +70,27 @@ function skyword_menu() {
 }
 
 /**
- * Implements hook_theme().
- */
-function skyword_theme() {
-  return array( );
-}
-
-/**
  * Access callback check for Skyword API Services.
- *
- * @TODO need to configure this later for user permissions
  */
 function _skyword_access($op, $args) {
   global $user;
   $access = FALSE;
-  return TRUE;
+
   switch($op) {
     case 'token retrieve':
-      $access = user_access('token retrieve', $user) ? TRUE : FALSE;
+      $access = user_access('token retrieve', $user);
       break;
 
     case 'version retrieve':
-      $access = user_access('version retrieve', $user) ? TRUE : FALSE;
+      $access = user_access('version retrieve', $user);
+      break;
+
+    case 'taxonomies retrieve':
+      $access = user_access('taxonomies retrieve', $user);
+      break;
+
+    case 'taxonomy create':
+      $access = user_access('taxonomy create', $user);
       break;
   }
 
@@ -151,23 +154,20 @@ function skyword_services_resources() {
           'module' => 'skyword',
           'name' => 'src/Resources/version'
         ),
-        'callback' => '_skyword_version_retrieve',
-        'access callback' => TRUE,
+        'callback' => '_skyword_version_index',
+        'access callback' => '_skyword_access',
         'access arguments' => array('version retrieve'),
         'access arguments append' => TRUE
       ),
     ),
     'taxonomies' => array(
-      'index' => array(
-        'help' => 'Returns a list of taxonomies',
-        'file' => array(
-          'type' => 'inc',
+      'index' => array( 'help' => 'Returns a list of taxonomies', 'file' => array( 'type' => 'inc',
           'module' => 'skyword',
           'name' => 'src/Resources/taxonomies',
         ),
         'callback' => '_skyword_taxonomies_index',
         'access callback' => '_skyword_access',
-        'access arguments' => array('index taxonomies'),
+        'access arguments' => array('taxonomies retrieve'),
         'access arguments append' => TRUE,
         'args' => array(
           array(
@@ -202,7 +202,7 @@ function skyword_services_resources() {
         ),
         'callback' => '_skyword_taxonomies_retrieve',
         'access callback' => '_skyword_access',
-        'access arguments' => array('retrieve taxonomy'),
+        'access arguments' => array('taxonomies retrieve'),
         'access arguments append' => TRUE,
         'args' => array(
           array(
@@ -250,8 +250,8 @@ function skyword_services_resources() {
           'name' => 'src/Resources/taxonomies',
         ),
         'callback' => '_skyword_taxonomies_create',
-        'access callback' => 'skyword_access',
-        'access arguments' => array('create taxonomy'),
+        'access callback' => '_skyword_access',
+        'access arguments' => array('taxonomy create'),
         'access arguments append' => TRUE,
         'args' => array(
           array(
@@ -541,18 +541,21 @@ function _skyword_content_type_fields($entity_type = 'node', $bundle = 'author')
   return $field_options;
 }
 
-
 /**
-*
-*/
+ *
+ */
 function skyword_entity_data($entity_type, $bundle) {
   $query = db_select('skyword_entities', 's')
     ->fields('s')
     ->condition('s.entity_type', $entity_type)
     ->condition('s.bundle', $bundle);
+
   $result = $query->execute()->fetchAssoc();
+
   if (isset($result['data'])) {
     $result['data'] = unserialize($result['data']);
   }
+
   return $result;
 }
+

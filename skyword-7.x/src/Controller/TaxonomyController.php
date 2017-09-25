@@ -16,31 +16,25 @@ class TaxonomyController extends BaseController {
    *   determines the field names to be included on the data. default to NULL
    */
   public function index($page = 1, $per_page = 250, $fields = NULL, $id = NULL) {
-    $query = db_select('taxonomy_vocabulary', 'v');
-    $query->join('skyword_entities', 'e', 'e.bundle = v.machine_name');
-    $query->leftJoin('taxonomy_term_data', 'term', 'term.vid = v.vid');
-    $query->condition('e.status', 1);
+    try {
+      $query = db_select('taxonomy_vocabulary', 'v');
+      $query->join('skyword_entities', 'e', 'e.bundle = v.machine_name');
+      $query->condition('e.status', 1);
 
-    if ($id !== NULL) {
+      if ($id !== NULL) {
         $query->condition('v.vid', $id);
+      }
+
+      $query->fields('v', ['vid' => 'vid', 'machine_name' => 'machine_name', 'description' => 'description']);
+
+      $start = ($page-1) * $per_page;
+      $end = $page * $per_page;
+
+      return $this->buildData($query->execute());
     }
-
-    $query->fields('v', ['vid' => 'id', 'machine_name' => 'name', 'description' => 'description']);
-
-    $start = ($page-1) * $per_page;
-    $end = $page * $per_page;
-
-    $results = $query->execute();
-    $rows = array();
-    foreach($results as $row) {
-      $numTerms = db_select('taxonomy_term_data')
-        ->condition('vid', $row->id)
-        ->countQuery()->execute()->fetchField();
-      $row->numTerms = $numTerms;
-      $rows[] = $row;
+    catch (Exception $e) {
+      return services_error(t('Unable to query taxonomy table.'), 500);
     }
-
-    return $rows;
   }
 
   /**
@@ -50,7 +44,7 @@ class TaxonomyController extends BaseController {
     $taxonomy = taxonomy_vocabulary_load($id);
 
     if (!$terms) {
-      $data = $this->buildData($taxonomy);
+      $data = $this->buildData($taxonomy, FALSE);
 
       if ($fields != NULL) {
         parent::limitOutputByFields($fields, $data);
@@ -58,7 +52,8 @@ class TaxonomyController extends BaseController {
 
       return $data;
     }
-    elseif ($terms == 'terms') {
+
+    if ($terms == 'terms') {
       $terms = entity_load('taxonomy_term', FALSE, ['vid' => $taxonomy->vid]);
       $data = NULL;
 
@@ -95,13 +90,13 @@ class TaxonomyController extends BaseController {
    */
   public function create($data, $id = NULL, $terms = NULL) {
     if (!$id && !$terms) {
-      $explodeName = explode(' ', $data->name);
+      $explodeName = explode(' ', $data['name']);
       $machineName = implode('_', $explodeName);
 
       $taxonomy = new stdClass();
-      $taxonomy->name = $name;
+      $taxonomy->name = $data['name'];
       $taxonomy->machine_name = $machineName;
-      $taxonomy->description = t($data->description);
+      $taxonomy->description = t($data['description']);
       $taxonomy->module = 'taxonomy';
 
       try {
@@ -113,13 +108,14 @@ class TaxonomyController extends BaseController {
         ];
       }
       catch (Exception $e) {
-        throw new Exception("Unable to create a Taxonomy named $name");
+        return services_error(t('Unable to create a Taxonomy named ' . $data['name']), 500);
       }
     }
-    else {
+
+    if ($id && $terms && $terms == 'terms') {
       try {
         $obj = new stdClass();
-        $obj->name = $data->name;
+        $obj->name = $data['name'];
         $obj->vid = $id;
         taxonomy_term_save($obj);
 
@@ -129,8 +125,11 @@ class TaxonomyController extends BaseController {
         ];
       }
       catch(Exception $e) {
-        throw new Exception("Unable to create a new Taxonomy term " . $obj->name);
+        return services_error(t('Unable to crete a taxonomy term ' . $data['name']), 500);
       }
+    }
+    else {
+      return services_error(t('Unable to crete a taxonomy term ' . $data['name']), 500);
     }
   }
 
@@ -150,26 +149,26 @@ class TaxonomyController extends BaseController {
    * @param $taxonomies
    *   an array of taxonomies
    */
-  private function buildData($taxonomies) {
-    if (is_array($taxonomies)) {
-      $container = [];
+  private function buildData($taxonomies, $list = TRUE) {
+    if ($list) {
+      $data = [];
 
       foreach ($taxonomies as $taxonomy) {
         $obj = new stdClass();
         $obj->id = $taxonomy->vid;
-        $obj->name = $taxonomy->name;
+        $obj->name = $taxonomy->machine_name;
         $obj->description = $taxonomy->description;
         $obj->numTerms = $this->getTaxonomyTermsCount($taxonomy->vid);
 
-        $container[] = $obj;
+        $data[] = $obj;
       }
 
-      return $container;
+      return $data;
     }
     else {
       $obj = new stdClass();
       $obj->id = $taxonomies->vid;
-      $obj->name = $taxnomies->name;
+      $obj->name = $taxonomies->machine_name;
       $obj->description = $taxonomies->description;
       $obj->numTerms = $this->getTaxonomyTermsCount($taxonomies->vid);
 
@@ -253,3 +252,4 @@ class TaxonomyController extends BaseController {
     return db_query("SELECT * FROM {taxonomy_term_data} WHERE vid = :vid", [':vid' => $vid])->rowCount();
   }
 }
+

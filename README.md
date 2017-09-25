@@ -61,11 +61,15 @@ I am using Postman for testing the API. Postman is Chrome App which you can down
 Install that, and once that is installed you may import this readily made Skyword collection, ready for testing:
 https://www.dropbox.com/s/atceni7p61n8j3t/Skyword.postman_collection.json?dl=0
 
-Import that json file into Postman. Currently, there are 3 postman test there:
+Import that json file into Postman. Currently, there are 7 postman test you can play on there:
 
 1. Get Authentication Token
 2. Get Version
-3. Get Taxonomies
+3. Get List of Taxonomies
+4. Create a Taxonomy
+5. Get specific Taxonomy
+6. Get a list of Terms from a Taxonomy
+7. Create a Term from a Taxonomy
 
 PS. You may need to update the domain name `skyword.local` with your own domain name.
 
