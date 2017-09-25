@@ -4,21 +4,21 @@
  * taxonomies.inc
  */
 
-
 function _skyword_taxonomies_index($page = 1, $per_page = 250, $fields = NULL) {
   require drupal_get_path('module', 'skyword') . '/src/Controller/TaxonomyController.php';
   $controller = new TaxonomyController();
   return $controller->index($page, $per_page, $fields);
 }
 
-function _skyword_taxonomies_retrieve($id) {
+function _skyword_taxonomies_retrieve($id, $terms) {
   require drupal_get_path('module', 'skyword') . '/src/Controller/TaxonomyController.php';
   $controller = new TaxonomyController();
-  return $controller->retrieve($id);
+  return $controller->retrieve($id, $terms);
 }
 
-function _skyword_taxonomies_create() {
+function _skyword_taxonomies_create($data, $id = NULL, $terms = NULL) {
   require drupal_get_path('module', 'skyword') . '/src/Controller/TaxonomyController.php';
   $controller = new TaxonomyController();
-  return $controller->create();
+  return $controller->create($data, $id, $terms);
 }
+
