@@ -1,26 +1,27 @@
 <?php
 
 /**
-* Resource callback for a single author.
-* --- Needs to be users that are not enabled for login
-*/
+ * Resource callback for Authors Index.
+ */
+function _skyword_authors_index($page, $per_page, $fields) {
+  require drupal_get_path('module', 'skyword') . '/src/Controller/AuthorController.php';
+  $controller = new AuthorController();
+
+  return $controller->index($page, $per_page, $fields);
+}
+
+/**
+ * Resource callback for a single author.
+ * --- Needs to be users that are not enabled for login
+ */
 function _skyword_authors_get($id) {
   $results = skyword_author_load_multiple(array(intval($id)));
   return !empty($results) ? (object) reset($results) : (object) array( );
 }
 
 /**
-* Resource callback for Authors Index.
-*/
-function _skyword_authors_index() {
-  $results = skyword_author_load_multiple();
-  watchdog('skyword', '<pre>' . print_r($results, true) . '</pre>');
-  return (object) $results;
-}
-
-/**
-* Resource callback for Creating a Author.
-*/
+ * Resource callback for Creating a Author.
+ */
 function _skyword_authors_create($data) {
   try {
     $id = variable_get('skyword_author_id', 'field_id');
