@@ -249,6 +249,30 @@ function skyword_user_manage($form, &$form_state) {
     unset($id);
   }
 
+  $id_enable = array(
+    '#type' => 'checkbox',
+    '#default_value' => isset($data['data']['fields']['uid']) ? $data['data']['fields']['uid']['status'] : 0
+  );
+  $form['data']['fields']['uid']['status'] = &$id_enable;
+  $form['data']['fields']['#rows']['uid'] = array(
+    array('data' => 'ID'),
+    array('data' => 'The user id'),
+    array('data' => t('No')),
+    array('data' => &$id_enable),
+  );
+
+  $email_enable = array(
+    '#type' => 'checkbox',
+    '#default_value' => isset($data['data']['fields']['email']) ? $data['data']['fields']['email']['status'] : 0
+  );
+  $form['data']['fields']['email']['status'] = &$email_enable;
+  $form['data']['fields']['#rows']['email'] = array(
+    array('data' => 'E-mail'),
+    array('data' => 'The users e-mail'),
+    array('data' => t('No')),
+    array('data' => &$email_enable),
+  );
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save')
@@ -257,6 +281,9 @@ function skyword_user_manage($form, &$form_state) {
   return $form;
 }
 
+/**
+ * Implements hook_submit().
+ */
 function skyword_user_manage_submit($form, &$form_state) {
   $data['fields'] = $form_state['input']['data']['fields'];
   $data['role'] = $form_state['values']['role'];
