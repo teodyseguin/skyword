@@ -3,7 +3,8 @@
 include 'BaseController.php';
 include 'ControllerInterface.php';
 
-class AuthorController extends BaseController implements ControllerInterface {
+class AuthorController extends BaseController {
+  protected $authorFields = ['id', 'firstName', 'lastName', 'email', 'byline', 'icon'];
 
   /**
    * Returns a list of Taxonomies
@@ -16,57 +17,25 @@ class AuthorController extends BaseController implements ControllerInterface {
    *   determines the field names to be included on the data. default to NULL
    */
   public function index($page = 1, $per_page = 250, $fields = NULL) {
-    $taxonomies = taxonomy_get_vocabularies();
-    $data = NULL;
+    try {
+      $users = $this->loadUsers();
 
-    if (count($taxonomies) < $per_page) {
-      $data = $this->buildData($taxonomies);
+      return parent::buildData($users, $fields ? parent::extractFields($fields) : $this->authorFields);
     }
-    else {
-      $data = $this->buildDataWithCount($per_page, $taxonomies);
+    catch (Exception $e) {
+      return services_error(t('Unable to query authors table index'), 500);
     }
-
-    if ($fields != NULL) {
-      parent::limitOutputByFields($fields, $data);
-    }
-
-    return $data;
   }
 
   /**
    * Retrieve a specific Taxonomy
    */
-  public function retrieve($id, $fields = NULL) {
-    $taxonomy = taxonomy_vocabulary_lod($id);
-    $data = $this->buildData($taxonomy);
-
-    if ($fields != NULL) {
-      parent::limitOutputByFields($fields, $data);
-    }
-
-    return $data;
-  }
+  public function retrieve($id, $fields = NULL) {}
 
   /**
    * Create a Taxonomy
    */
-  public function create($name, $description) {
-    $explodeName = explode(' ', $name);
-    $machineName = implode('_', $explodeName);
-
-    $taxonomy = new stdClass();
-    $taxonomy->name = $name;
-    $taxonomy->machine_name = $machineName;
-    $taxonomy->description = t($description);
-    $taxonomy->module = 'taxonomy';
-
-    try {
-      taxonomy_vocabulary_save($taxonomy);
-    }
-    catch (Exception $e) {
-      throw new Exception("Unable to create a Taxonomy named $name");
-    }
-  }
+  public function create($name, $description) {}
 
   /**
    * Update a Taxonomy
@@ -79,39 +48,6 @@ class AuthorController extends BaseController implements ControllerInterface {
   public function delete() {}
 
   /**
-   * Build the data normally
-   *
-   * @param $taxonomies
-   *   an array of taxonomies
-   */
-  private function buildData($taxonomies) {
-    if (is_array($taxonomies)) {
-      $container = [];
-
-      foreach ($taxonomies as $taxonomy) {
-        $obj = new stdClass();
-        $obj->id = $taxonomy->vid;
-        $obj->name = $taxonomy->name;
-        $obj->description = $taxonomy->description;
-        $obj->numTerms = $this->getTaxonomyTermsCount($taxonomy->vid);
-
-        $container[] = $obj;
-      }
-
-      return $container;
-    }
-    else {
-      $obj = new stdClass();
-      $obj->id = $taxonomies->vid;
-      $obj->name = $taxnomies->name;
-      $obj->description = $taxonomies->description;
-      $obj->numTerms = $this->getTaxonomyTermsCount($taxonomies->vid);
-
-      return $obj;
-    }
-  }
-
-  /**
    * Build the data per count
    *
    * @param $per_page
@@ -119,34 +55,48 @@ class AuthorController extends BaseController implements ControllerInterface {
    * @param $taxonomies
    *   an array of taxonomies
    */
-  private function buildDataWithCount($per_page, $taxonomies) {
-    $counter = 0;
-    $container = [];
+  private function buildDataWithCount($per_page, $taxonomies) {}
 
-    foreach ($taxonomies as $taxonomy) {
-      if ($counter < $per_page) {
-        $obj = new stdClass();
-        $obj->id = $taxonomy->vid;
-        $obj->name = $taxonomy->name;
-        $obj->description = $taxonomy->description;
-        $obj->numTerms = $this->getTaxonomyTermsCount($taxonomy->vid);
+  /**
+   * Check which user role are enabled for skyword use
+   */
+  private function checkUserEntityRoleEnabled() {
+    $query = db_select('skyword_entities', 's');
+    $query->condition('s.status', 1);
+    $query->condition('s.bundle', 'user');
+    $query->fields('s', ['data']);
+    $result = $query->execute()->fetchObject();
 
-        $container[] = $obj;
-      }
-
-      $counter++;
-    }
-
-    return $container;
+    return unserialize($result->data);
   }
 
   /**
-   * Get the number of terms associated to a Taxonomy
-   *
-   * @param $vid
-   *   the vocabulary id of a Taxonomy
+   * Load the user fields
    */
-  private function getTaxonomyTermsCount($vid) {
-    return db_query("SELECT * FROM {taxonomy_term_data} WHERE vid = :vid", [':vid' => $vid])->rowCount();
+  private function loadUsers() {
+    $role = $this->checkUserEntityRoleEnabled();
+    $query = db_select('users', 'u');
+    $query->leftjoin('users_roles', 'ur', 'ur.uid = u.uid');
+    $query->condition('ur.rid', $role['role']);
+    $query->fields('ur', ['uid' => 'uid']);
+    $results = $query->execute();
+
+    $data = [];
+
+    foreach ($results as $row) {
+      $user = user_load($row->uid);
+
+      $data[] = (object)[
+        'firstName' => $user->field_first_name[LANGUAGE_NONE][0]['value'],
+        'lastName' => $user->field_last_name[LANGUAGE_NONE][0]['value'],
+        'email' => $user->mail,
+        'id' => $user->uid,
+        'byline' => $user->field_byline[LANGUAGE_NONE][0]['value'],
+        'icon' => file_create_url($user->field_icon[LANGUAGE_NONE][0]['uri'])
+      ];
+    }
+
+    return $data;
   }
 }
+
