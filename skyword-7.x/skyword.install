@@ -51,11 +51,12 @@ function skyword_schema() {
   );
 }
 
-
 function skyword_update_7001() {
   $field = array(
     'description' => 'Stores field mapping information for this entity type.',
     'type' => 'text'
   );
+
   db_add_field('skyword_entities', 'data', $field);
 }
+
