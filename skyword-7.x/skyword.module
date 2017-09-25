@@ -23,12 +23,16 @@ function skyword_permission() {
     ),
     'taxonomies retrieve' => array(
       'title' => t('Allow to retrieve a list taxonomies or specific taxonomy'),
-      'description' => t('Return a list of taxonomies'),
+      'description' => t('Return a list or specific taxonomy(s)'),
     ),
     'taxonomy create' => array(
       'title' => t('Allow to create a taxonomy'),
       'description' => t('Create a taxonomy'),
     ),
+    'authors retrieve' => array(
+      'title' => t('Allow to retrieve a list of authors or specific author'),
+      'description' => t('Return a list or specific author(s)'),
+    )
   );
 }
 
@@ -91,6 +95,10 @@ function _skyword_access($op, $args) {
 
     case 'taxonomy create':
       $access = user_access('taxonomy create', $user);
+      break;
+
+    case 'authors retrieve':
+      $access = user_access('authors retrieve', $user);
       break;
   }
 
@@ -284,25 +292,32 @@ function skyword_services_resources() {
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/authors'
+          'name' => 'src/Resources/authors'
         ),
         'callback' => '_skyword_authors_index',
         'access callback' => '_skyword_access',
-        'access arguments' => array('index authors'),
+        'access arguments' => array('authors retrieve'),
         'access arguments append' => TRUE,
         'args' => array(
           array(
             'name' => 'page',
             'type' => 'int',
             'description' => 'Starting page.',
-            'source' => array('path' => 0),
+            'source' => array('param' => 'page'),
             'optional' => TRUE,
           ),
           array(
             'name' => 'per_page',
             'type' => 'int',
             'description' => 'The number to retrieve per page. Default is 250.',
-            'source' => array('path' => 0),
+            'source' => array('param' => 'per_page'),
+            'optional' => TRUE,
+          ),
+          array(
+            'name' => 'fields',
+            'type' => 'string',
+            'description' => 'A comma separated list of fields to include.',
+            'source' => array('param' => 'fields'),
             'optional' => TRUE,
           ),
         ),
