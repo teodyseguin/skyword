@@ -4,8 +4,8 @@ class BaseController {
   /**
    * Build the data normally
    *
-   * @param $taxonomies
-   *   an array of taxonomies
+   * @param $entities
+   *   an array of entity object
    */
   protected function buildData($entities, $fields, $list = TRUE) {
     if ($list) {
@@ -34,11 +34,17 @@ class BaseController {
     }
   }
 
+  /**
+   * Extract the fields from a string
+   */
   protected function extractFields($fields) {
     $f = explode(',', $fields);
     return array_flip($f);
   }
 
+  /**
+   * Limit remove the fields from an object
+   */
   protected function limitOutputByFields($fields, &$data) {
     $f = explode(',', $fields);
     $fieldsOutput = array_flip($f);

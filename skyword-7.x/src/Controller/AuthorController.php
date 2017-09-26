@@ -4,7 +4,7 @@ include 'BaseController.php';
 include 'ControllerInterface.php';
 
 class AuthorController extends BaseController {
-  protected $authorFields = ['id', 'firstName', 'lastName', 'email', 'byline', 'icon'];
+  private $authorFields = ['id', 'firstName', 'lastName', 'email', 'byline', 'icon'];
 
   /**
    * Returns a list of Taxonomies
@@ -20,17 +20,36 @@ class AuthorController extends BaseController {
     try {
       $users = $this->loadUsers();
 
-      return parent::buildData($users, $fields ? parent::extractFields($fields) : $this->authorFields);
+      if ($users) {
+        return parent::buildData($users, $fields ? parent::extractFields($fields) : $this->authorFields);
+      }
+      else {
+        return services_error(t('There are no authors found.'), 404);
+      }
     }
     catch (Exception $e) {
-      return services_error(t('Unable to query authors table index'), 500);
+      return services_error(t('Unable to query authors table'), 500);
     }
   }
 
   /**
    * Retrieve a specific Taxonomy
    */
-  public function retrieve($id, $fields = NULL) {}
+  public function retrieve($id, $fields = NULL) {
+    try {
+      $user = $this->loadUsers($id);
+
+      if ($user) {
+        return $this->buildData($user, $fields ? parent::extractFields($fields) : $this->authorFields, FALSE);
+      }
+      else {
+        return services_error(t("No author of id #$id was found."), 404);
+      }
+    }
+    catch (Exception $e) {
+      return services_error(t('Unable to query authors table'), 500);
+    }
+  }
 
   /**
    * Create a Taxonomy
@@ -73,20 +92,31 @@ class AuthorController extends BaseController {
   /**
    * Load the user fields
    */
-  private function loadUsers() {
+  private function loadUsers($id = NULL) {
     $role = $this->checkUserEntityRoleEnabled();
-    $query = db_select('users', 'u');
-    $query->leftjoin('users_roles', 'ur', 'ur.uid = u.uid');
-    $query->condition('ur.rid', $role['role']);
+    $query = db_select('users_roles', 'ur');
+
+    if ($id != NULL) {
+      $query->condition('ur.uid', $id);
+      $query->condition('ur.rid', $role['role']);
+    }
+    else {
+      $query->condition('ur.rid', $role['role']);
+    }
+
     $query->fields('ur', ['uid' => 'uid']);
+
     $results = $query->execute();
+
+    if (!$results->rowCount()) {
+      return FALSE;
+    }
 
     $data = [];
 
-    foreach ($results as $row) {
-      $user = user_load($row->uid);
-
-      $data[] = (object)[
+    if ($id) {
+      $user = user_load($results->fetchObject()->uid);
+      $data = (object)[
         'firstName' => $user->field_first_name[LANGUAGE_NONE][0]['value'],
         'lastName' => $user->field_last_name[LANGUAGE_NONE][0]['value'],
         'email' => $user->mail,
@@ -94,6 +124,20 @@ class AuthorController extends BaseController {
         'byline' => $user->field_byline[LANGUAGE_NONE][0]['value'],
         'icon' => file_create_url($user->field_icon[LANGUAGE_NONE][0]['uri'])
       ];
+    }
+    else {
+      foreach ($results as $row) {
+        $user = user_load($row->uid);
+
+        $data[] = (object)[
+          'firstName' => $user->field_first_name[LANGUAGE_NONE][0]['value'],
+          'lastName' => $user->field_last_name[LANGUAGE_NONE][0]['value'],
+          'email' => $user->mail,
+          'id' => $user->uid,
+          'byline' => $user->field_byline[LANGUAGE_NONE][0]['value'],
+          'icon' => file_create_url($user->field_icon[LANGUAGE_NONE][0]['uri'])
+        ];
+      }
     }
 
     return $data;

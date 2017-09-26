@@ -323,15 +323,15 @@ function skyword_services_resources() {
         ),
       ),
       'retrieve' => array(
-        'help' => 'Returns the index of Authors.',
+        'help' => 'Returns a specific Author.',
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/authors'
+          'name' => 'src/Resources/authors'
         ),
-        'callback' => '_skyword_authors_get',
+        'callback' => '_skyword_authors_retrieve',
         'access callback' => '_skyword_access',
-        'access arguments' => array('retrieve author'),
+        'access arguments' => array('authors retrieve'),
         'access arguments append' => TRUE,
         'args' => array(
           array(
@@ -340,7 +340,14 @@ function skyword_services_resources() {
             'description' => 'The unique id of the author.',
             'source' => array('path' => 0),
             'optional' => FALSE
-          )
+          ),
+          array(
+            'name' => 'fields',
+            'type' => 'string',
+            'description' => 'A comma separated list of fields to include.',
+            'source' => array('param' => 'fields'),
+            'optional' => TRUE,
+          ),
         ),
       ),
       'create' => array(
