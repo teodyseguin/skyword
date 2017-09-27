@@ -32,7 +32,11 @@ function skyword_permission() {
     'authors retrieve' => array(
       'title' => t('Allow to retrieve a list of authors or specific author'),
       'description' => t('Return a list or specific author(s)'),
-    )
+    ),
+    'author create' => array(
+      'title' => t('Allow to create an Author'),
+      'description' => t('Create an author'),
+    ),
   );
 }
 
@@ -78,31 +82,7 @@ function skyword_menu() {
  */
 function _skyword_access($op, $args) {
   global $user;
-  $access = FALSE;
-
-  switch($op) {
-    case 'token retrieve':
-      $access = user_access('token retrieve', $user);
-      break;
-
-    case 'version retrieve':
-      $access = user_access('version retrieve', $user);
-      break;
-
-    case 'taxonomies retrieve':
-      $access = user_access('taxonomies retrieve', $user);
-      break;
-
-    case 'taxonomy create':
-      $access = user_access('taxonomy create', $user);
-      break;
-
-    case 'authors retrieve':
-      $access = user_access('authors retrieve', $user);
-      break;
-  }
-
-  return $access;
+  return user_access($op, $user);
 }
 
 /**
@@ -355,12 +335,21 @@ function skyword_services_resources() {
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/authors',
+          'name' => 'src/Resources/authors',
         ),
         'callback' => '_skyword_authors_create',
         'access callback' => '_skyword_access',
-        'acces arguments' => array('create author'),
+        'access arguments' => array('author create'),
         'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'data',
+            'type' => 'struct',
+            'description' => 'The post data from the request',
+            'source' => 'data',
+            'optional' => FALSE,
+          ),
+        ),
       ),
       'update' => array(
         'help' => 'Update an Author',

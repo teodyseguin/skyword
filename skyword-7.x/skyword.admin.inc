@@ -292,6 +292,7 @@ function skyword_user_manage($form, &$form_state) {
 function skyword_user_expected_fields() {
   return array(
     'none' => '-- Select --',
+    'id' => 'ID',
     'mail' => 'E-mail',
     'firstName' => 'First Name',
     'lastName' => 'Last Name',

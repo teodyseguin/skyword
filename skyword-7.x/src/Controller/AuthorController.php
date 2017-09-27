@@ -54,7 +54,18 @@ class AuthorController extends BaseController {
   /**
    * Create a Taxonomy
    */
-  public function create($name, $description) {}
+  public function create($data) {
+    $newUser = $this->prepareNewUser($data);
+
+    try {
+      user_save(NULL, $newUser);
+
+      return (object)$data;
+    }
+    catch (Exception $e) {
+      return services_error(t('Unable to create a new author.'), 500);
+    }
+  }
 
   /**
    * Update a Taxonomy
@@ -92,7 +103,7 @@ class AuthorController extends BaseController {
   /**
    * Get the enabled fields from account settings
    */
-  private function getEnabledFields($fields) {
+  private function setEnabledFields($fields) {
     foreach ($fields as $machineName => $field) {
       if (!$field['status']) unset($fields[$machineName]);
     }
@@ -106,7 +117,7 @@ class AuthorController extends BaseController {
   private function loadUsers($id = NULL) {
     $role = $this->checkUserEntityRoleEnabled();
 
-    $this->getEnabledFields($role['fields']);
+    $this->setEnabledFields($role['fields']);
 
     $query = db_select('users_roles', 'ur');
 
@@ -168,6 +179,47 @@ class AuthorController extends BaseController {
     }
 
     return $d;
+  }
+
+  /**
+   * Prepare a new user object for saving
+   *
+   * @param $data
+   *   the request post data
+   */
+  private function prepareNewUser($data) {
+    $userName = strtolower($data['lastName']) . strtolower($data['firstName']);
+    $mail = $data['email'];
+    $ln = LANGUAGE_NONE;
+
+    $role = $this->checkUserEntityRoleEnabled();
+    $this->setEnabledFields($role['fields']);
+
+    $newUser = [
+      'name' => $userName,
+      'password' => rand(),
+      'mail' => $mail,
+      'status' => 1,
+      'init' => $mail,
+      'roles' => [
+        DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+      ],
+    ];
+
+    foreach ($this->enabledFields as $machineName => $field) {
+      if ($machineName != 'mail') {
+        if ($field['mapto'] != 'icon') {
+          $newUser[$machineName][$ln][0]['value'] = !empty($data[$field['mapto']]) ? $data[$field['mapto']] : '';
+        }
+        else {
+          $icon = file_get_contents($data[$field['mapto']]);
+          $file = file_save_data($icon, NULL, FILE_EXISTS_REPLACE);
+          $newUser[$machineName][$ln][0]['fid'] = $file->fid;
+        }
+      }
+    }
+
+    return $newUser;
   }
 }
 
