@@ -200,8 +200,11 @@ function skyword_content_manage_submit($form, &$form_state) {
  * Configure system for Skyword managed users.
  */
 function skyword_user_manage($form, &$form_state) {
-  $roles = user_roles();
+  $roles = array('-- Select --') + user_roles();
+
+  // remove anonyous user from the selection
   unset($roles[1]);
+
   $data = skyword_entity_data('user', 'user');
   
   $form['role'] = array(
@@ -221,6 +224,7 @@ function skyword_user_manage($form, &$form_state) {
     '#header' => array(
       array('data' => t('Field')),
       array('data' => t('Description')),
+      array('data' => t('Map To')),
       array('data' => t('Required')),
       array('data' => t('Status'))
     ),
@@ -230,22 +234,50 @@ function skyword_user_manage($form, &$form_state) {
   // get fields to send to skyword
   $fields = field_info_instances('user', 'user');
 
+  $mail_enable = array(
+    '#type' => 'checkbox',
+    '#default_value' => isset($data['data']['fields']['mail']) ? $data['data']['fields']['mail']['status'] : 0,
+  );
+  $mail_mapto = array(
+    '#type' => 'select',
+    '#options' => skyword_user_expected_fields(),
+    '#default_value' => isset($data['data']['fields']['mail']) ? $data['data']['fields']['mail']['mapto'] : 'none',
+  );
+  $form['data']['fields']['mail']['status'] = &$mail_enable;
+  $form['data']['fields']['mail']['mapto'] = &$mail_mapto;
+  $form['data']['fields']['#rows']['mail'] = array(
+    array('data' => 'E-mail'),
+    array('data' => 'The user e-mail'),
+    array('data' => &$mail_mapto),
+    array('data' => t('No')),
+    array('data' => &$mail_enable),
+  );
+
   foreach ($fields as $id => $field) {
     $enable = array(
       '#type' => 'checkbox',
-      '#default_value' => isset($data['data']['fields'][$id]) ? $data['data']['fields'][$id]['status'] : 0
+      '#default_value' => isset($data['data']['fields'][$id]) ? $data['data']['fields'][$id]['status'] : 0,
+    );
+
+    $mapto = array(
+      '#type' => 'select',
+      '#options' => skyword_user_expected_fields(),
+      '#default_value' => isset($data['data']['fields'][$id]) ? $data['data']['fields'][$id]['mapto'] : 'none',
     );
 
     $form['data']['fields'][$id]['status'] = &$enable;
+    $form['data']['fields'][$id]['mapto'] = &$mapto;
 
     $form['data']['fields']['#rows'][$id] = array(
       array('data' => $field['label']),
       array('data' => $field['description']),
+      array('data' => &$mapto),
       array('data' => $field['required'] ? t('Yes') : t('No') ),
-      array('data' => &$enable )
+      array('data' => &$enable)
     );
 
     unset($enable);
+    unset($mapto);
     unset($id);
   }
 
@@ -257,9 +289,25 @@ function skyword_user_manage($form, &$form_state) {
   return $form;
 }
 
+function skyword_user_expected_fields() {
+  return array(
+    'none' => '-- Select --',
+    'id' => 'ID',
+    'mail' => 'E-mail',
+    'firstName' => 'First Name',
+    'lastName' => 'Last Name',
+    'byline' => 'Byline',
+    'icon' => 'Icon',
+  );
+}
+
+/**
+ * Implements hook_submit().
+ */
 function skyword_user_manage_submit($form, &$form_state) {
   $data['fields'] = $form_state['input']['data']['fields'];
   $data['role'] = $form_state['values']['role'];
+  $status = $form_state['values']['role'] == 0 ? 0 : 1;
 
   try {
     db_merge('skyword_entities')
@@ -270,10 +318,12 @@ function skyword_user_manage_submit($form, &$form_state) {
     ->fields(array(
       'entity_type' => 'user',
       'bundle' => 'user',
-      'status' => 1,
+      'status' => $status,
       'data' => serialize($data)
     ))
     ->execute();
+
+    drupal_set_message(t('Account settings saved.'));
   }
   catch (Exception $e) {
     throw new Exception('Unable to update skyword_entities table', $e);

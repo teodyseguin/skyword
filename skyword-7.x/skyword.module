@@ -23,11 +23,19 @@ function skyword_permission() {
     ),
     'taxonomies retrieve' => array(
       'title' => t('Allow to retrieve a list taxonomies or specific taxonomy'),
-      'description' => t('Return a list of taxonomies'),
+      'description' => t('Return a list or specific taxonomy(s)'),
     ),
     'taxonomy create' => array(
       'title' => t('Allow to create a taxonomy'),
       'description' => t('Create a taxonomy'),
+    ),
+    'authors retrieve' => array(
+      'title' => t('Allow to retrieve a list of authors or specific author'),
+      'description' => t('Return a list or specific author(s)'),
+    ),
+    'author create' => array(
+      'title' => t('Allow to create an Author'),
+      'description' => t('Create an author'),
     ),
   );
 }
@@ -74,27 +82,7 @@ function skyword_menu() {
  */
 function _skyword_access($op, $args) {
   global $user;
-  $access = FALSE;
-
-  switch($op) {
-    case 'token retrieve':
-      $access = user_access('token retrieve', $user);
-      break;
-
-    case 'version retrieve':
-      $access = user_access('version retrieve', $user);
-      break;
-
-    case 'taxonomies retrieve':
-      $access = user_access('taxonomies retrieve', $user);
-      break;
-
-    case 'taxonomy create':
-      $access = user_access('taxonomy create', $user);
-      break;
-  }
-
-  return $access;
+  return user_access($op, $user);
 }
 
 /**
@@ -284,39 +272,46 @@ function skyword_services_resources() {
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/authors'
+          'name' => 'src/Resources/authors'
         ),
         'callback' => '_skyword_authors_index',
         'access callback' => '_skyword_access',
-        'access arguments' => array('index authors'),
+        'access arguments' => array('authors retrieve'),
         'access arguments append' => TRUE,
         'args' => array(
           array(
             'name' => 'page',
             'type' => 'int',
             'description' => 'Starting page.',
-            'source' => array('path' => 0),
+            'source' => array('param' => 'page'),
             'optional' => TRUE,
           ),
           array(
             'name' => 'per_page',
             'type' => 'int',
             'description' => 'The number to retrieve per page. Default is 250.',
-            'source' => array('path' => 0),
+            'source' => array('param' => 'per_page'),
+            'optional' => TRUE,
+          ),
+          array(
+            'name' => 'fields',
+            'type' => 'string',
+            'description' => 'A comma separated list of fields to include.',
+            'source' => array('param' => 'fields'),
             'optional' => TRUE,
           ),
         ),
       ),
       'retrieve' => array(
-        'help' => 'Returns the index of Authors.',
+        'help' => 'Returns a specific Author.',
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/authors'
+          'name' => 'src/Resources/authors'
         ),
-        'callback' => '_skyword_authors_get',
+        'callback' => '_skyword_authors_retrieve',
         'access callback' => '_skyword_access',
-        'access arguments' => array('retrieve author'),
+        'access arguments' => array('authors retrieve'),
         'access arguments append' => TRUE,
         'args' => array(
           array(
@@ -325,7 +320,14 @@ function skyword_services_resources() {
             'description' => 'The unique id of the author.',
             'source' => array('path' => 0),
             'optional' => FALSE
-          )
+          ),
+          array(
+            'name' => 'fields',
+            'type' => 'string',
+            'description' => 'A comma separated list of fields to include.',
+            'source' => array('param' => 'fields'),
+            'optional' => TRUE,
+          ),
         ),
       ),
       'create' => array(
@@ -333,12 +335,21 @@ function skyword_services_resources() {
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/authors',
+          'name' => 'src/Resources/authors',
         ),
         'callback' => '_skyword_authors_create',
         'access callback' => '_skyword_access',
-        'acces arguments' => array('create author'),
+        'access arguments' => array('author create'),
         'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'data',
+            'type' => 'struct',
+            'description' => 'The post data from the request',
+            'source' => 'data',
+            'optional' => FALSE,
+          ),
+        ),
       ),
       'update' => array(
         'help' => 'Update an Author',
