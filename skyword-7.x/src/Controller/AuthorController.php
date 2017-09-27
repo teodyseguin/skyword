@@ -104,7 +104,6 @@ class AuthorController extends BaseController {
    * Load the user fields
    */
   private function loadUsers($id = NULL) {
-    $ln = LANGUAGE_NONE;
     $role = $this->checkUserEntityRoleEnabled();
 
     $this->getEnabledFields($role['fields']);
@@ -131,36 +130,47 @@ class AuthorController extends BaseController {
 
     if ($id) {
       $user = user_load($results->fetchObject()->uid);
-      $d = new stdClass();
+      $data = $this->mapAuthorFields($user);
+    }
+    else {
+      foreach ($results as $row) {
+        $user = user_load($row->uid);
+        $data[] = $this->mapAuthorFields($user);
+      }
+    }
 
-      foreach ($this->enabledFields as $machineName => $field) {
+    return $data;
+  }
+
+  /**
+   * Map the enabled fields to the returning object
+   *
+   * @param $user
+   *   the user object
+   *
+   * @return array of objects || object
+   */
+  private function mapAuthorFields($user) {
+    $d = new stdClass();
+    $ln = LANGUAGE_NONE;
+
+    foreach ($this->enabledFields as $machineName => $field) {
+      if ($machineName == 'mail') {
+        $d->{$field['mapto']} = $user->{$machineName};
+      }
+      elseif ($machineName == 'uid') {
+        $d->{$field['mapto']} = $user->uid;
+      }
+      else {
         $d->{$field['mapto']} = isset($user->{$machineName}[$ln])
         ? $field['mapto'] != 'icon'
           ? $user->{$machineName}[$ln][0]['value']
           : file_create_url($user->{$machineName}[$ln][0]['uri'])
         : '';
       }
-
-      $data = $d;
-    }
-    else {
-      foreach ($results as $row) {
-        $user = user_load($row->uid);
-        $d = new stdClass();
-
-        foreach ($this->enabledFields as $machineName => $field) {
-          $d->{$field['mapto']} = isset($user->{$machineName}[$ln])
-          ? $field['mapto'] != 'icon'
-            ? $user->{$machineName}[$ln][0]['value']
-            : file_create_url($user->{$machineName}[$ln][0]['uri'])
-          : '';
-        }
-
-        $data[] = $d;
-      }
     }
 
-    return $data;
+    return $d;
   }
 }
 
