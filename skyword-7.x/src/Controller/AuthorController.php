@@ -158,9 +158,6 @@ class AuthorController extends BaseController {
       if ($machineName == 'mail') {
         $d->{$field['mapto']} = $user->{$machineName};
       }
-      elseif ($machineName == 'uid') {
-        $d->{$field['mapto']} = $user->uid;
-      }
       else {
         $d->{$field['mapto']} = isset($user->{$machineName}[$ln])
         ? $field['mapto'] != 'icon'

@@ -234,25 +234,6 @@ function skyword_user_manage($form, &$form_state) {
   // get fields to send to skyword
   $fields = field_info_instances('user', 'user');
 
-  $id_enable = array(
-    '#type' => 'checkbox',
-    '#default_value' => isset($data['data']['fields']['uid']) ? $data['data']['fields']['uid']['status'] : 0,
-  );
-  $id_mapto = array(
-    '#type' => 'select',
-    '#options' => skyword_user_expected_fields(),
-    '#default_value' => isset($data['data']['fields']['uid']) ? $data['data']['fields']['uid']['mapto'] : 'none',
-  );
-  $form['data']['fields']['uid']['status'] = &$id_enable;
-  $form['data']['fields']['uid']['mapto'] = &$id_mapto;
-  $form['data']['fields']['#rows']['uid'] = array(
-    array('data' => 'ID'),
-    array('data' => 'The user id'),
-    array('data' => &$id_mapto),
-    array('data' => t('No')),
-    array('data' => &$id_enable),
-  );
-
   $mail_enable = array(
     '#type' => 'checkbox',
     '#default_value' => isset($data['data']['fields']['mail']) ? $data['data']['fields']['mail']['status'] : 0,
@@ -311,7 +292,6 @@ function skyword_user_manage($form, &$form_state) {
 function skyword_user_expected_fields() {
   return array(
     'none' => '-- Select --',
-    'id' => 'ID',
     'mail' => 'E-mail',
     'firstName' => 'First Name',
     'lastName' => 'Last Name',
