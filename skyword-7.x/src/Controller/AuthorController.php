@@ -4,7 +4,7 @@ include 'BaseController.php';
 include 'ControllerInterface.php';
 
 class AuthorController extends BaseController {
-  private $authorFields = ['id', 'firstName', 'lastName', 'email', 'byline', 'icon'];
+  private $enabledFields;
 
   /**
    * Returns a list of Taxonomies
@@ -21,14 +21,14 @@ class AuthorController extends BaseController {
       $users = $this->loadUsers();
 
       if ($users) {
-        return parent::buildData($users, $fields ? parent::extractFields($fields) : $this->authorFields);
+        return $users;
       }
       else {
         return services_error(t('There are no authors found.'), 404);
       }
     }
     catch (Exception $e) {
-      return services_error(t('Unable to query authors table'), 500);
+      return services_error(t('Unable to query authors table'), 404);
     }
   }
 
@@ -40,14 +40,14 @@ class AuthorController extends BaseController {
       $user = $this->loadUsers($id);
 
       if ($user) {
-        return $this->buildData($user, $fields ? parent::extractFields($fields) : $this->authorFields, FALSE);
+        return $user;
       }
       else {
         return services_error(t("No author of id #$id was found."), 404);
       }
     }
     catch (Exception $e) {
-      return services_error(t('Unable to query authors table'), 500);
+      return services_error(t('Unable to query authors table'), 404);
     }
   }
 
@@ -90,10 +90,25 @@ class AuthorController extends BaseController {
   }
 
   /**
+   * Get the enabled fields from account settings
+   */
+  private function getEnabledFields($fields) {
+    foreach ($fields as $machineName => $field) {
+      if (!$field['status']) unset($fields[$machineName]);
+    }
+
+    $this->enabledFields = $fields;
+  }
+
+  /**
    * Load the user fields
    */
   private function loadUsers($id = NULL) {
+    $ln = LANGUAGE_NONE;
     $role = $this->checkUserEntityRoleEnabled();
+
+    $this->getEnabledFields($role['fields']);
+
     $query = db_select('users_roles', 'ur');
 
     if ($id != NULL) {
@@ -116,27 +131,32 @@ class AuthorController extends BaseController {
 
     if ($id) {
       $user = user_load($results->fetchObject()->uid);
-      $data = (object)[
-        'firstName' => $user->field_first_name[LANGUAGE_NONE][0]['value'],
-        'lastName' => $user->field_last_name[LANGUAGE_NONE][0]['value'],
-        'email' => $user->mail,
-        'id' => $user->uid,
-        'byline' => $user->field_byline[LANGUAGE_NONE][0]['value'],
-        'icon' => file_create_url($user->field_icon[LANGUAGE_NONE][0]['uri'])
-      ];
+      $d = new stdClass();
+
+      foreach ($this->enabledFields as $machineName => $field) {
+        $d->{$field['mapto']} = isset($user->{$machineName}[$ln])
+        ? $field['mapto'] != 'icon'
+          ? $user->{$machineName}[$ln][0]['value']
+          : file_create_url($user->{$machineName}[$ln][0]['uri'])
+        : '';
+      }
+
+      $data = $d;
     }
     else {
       foreach ($results as $row) {
         $user = user_load($row->uid);
+        $d = new stdClass();
 
-        $data[] = (object)[
-          'firstName' => $user->field_first_name[LANGUAGE_NONE][0]['value'],
-          'lastName' => $user->field_last_name[LANGUAGE_NONE][0]['value'],
-          'email' => $user->mail,
-          'id' => $user->uid,
-          'byline' => $user->field_byline[LANGUAGE_NONE][0]['value'],
-          'icon' => file_create_url($user->field_icon[LANGUAGE_NONE][0]['uri'])
-        ];
+        foreach ($this->enabledFields as $machineName => $field) {
+          $d->{$field['mapto']} = isset($user->{$machineName}[$ln])
+          ? $field['mapto'] != 'icon'
+            ? $user->{$machineName}[$ln][0]['value']
+            : file_create_url($user->{$machineName}[$ln][0]['uri'])
+          : '';
+        }
+
+        $data[] = $d;
       }
     }
 

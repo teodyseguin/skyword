@@ -15,7 +15,7 @@ class BaseController {
         $obj = new stdClass();
 
         foreach ($fields as $field) {
-          $obj->{$field} = $entity->{$field};
+          if (property_exists($entity, $field)) $obj->{$field} = $entity->{$field};
         }
 
         $data[] = $obj;
