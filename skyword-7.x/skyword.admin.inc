@@ -89,7 +89,7 @@ function skyword_vocabulary_manage_submit($form, &$form_state) {
       'entity_type' => 'taxonomy_term',
       'bundle' => $form_state['values']['vocabulary'],
       'status' => $form_state['input']['skyword_status'],
-      'data' => serialize($form_state['input']['data']['fields'])
+      'data' => isset($form_state['input']['data']) ? serialize($form_state['input']['data']['fields']) : '',
     ))
     ->execute();
   }
