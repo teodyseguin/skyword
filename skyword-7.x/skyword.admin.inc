@@ -302,6 +302,38 @@ function skyword_user_expected_fields() {
 }
 
 /**
+ * Implements hook_validate().
+ */
+function skyword_user_manage_validate($form, &$form_state) {
+  foreach ($form_state['values']['data']['fields'] as $machineName => $field) {
+    $field_info = field_info_field($machineName);
+
+    if ($machineName == 'mail' && $field['mapto'] != 'mail') {
+      form_set_error('error', 'Field E-mail should map to E-mail.');
+    }
+
+    switch ($field['mapto']) {
+      case 'id':
+      case 'firstName':
+      case 'lastName':
+      case 'byline':
+        $field_info['type'] != 'text'
+        ? form_set_error('error', 'Map To ' . $field['mapto'] . ' must be paired to a text type field.')
+        : '';
+
+        break;
+
+      case 'icon':
+        $field_info['type'] != 'image'
+        ? form_set_error('error', 'Map To ' . $field['mapto'] . ' must be paired to an image type field.')
+        : '';
+
+        break;
+    }
+  }
+}
+
+/**
  * Implements hook_submit().
  */
 function skyword_user_manage_submit($form, &$form_state) {
