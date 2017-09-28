@@ -149,7 +149,7 @@ class TaxonomyController extends BaseController {
    * @param $taxonomies
    *   an array of taxonomies
    */
-  private function buildData($taxonomies, $list = TRUE) {
+  protected function buildData($taxonomies, $list = TRUE) {
     if ($list) {
       $data = [];
 
