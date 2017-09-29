@@ -57,5 +57,22 @@ class BaseController {
       }
     }
   }
+
+  /**
+   * Return the content types that are enabled for skyword use.
+   */
+  protected function getEnabledContentTypes() {
+    $query = db_select('skyword_entities', 'se');
+    $query->condition('se.status', 1);
+    $query->condition('se.entity_type', 'node');
+    $query->fields('se', ['bundle']);
+    $result = $query->execute()->fetchAll();
+
+    foreach ($result as $row) {
+      $data[] = $row->bundle;
+    }
+
+    return $data;
+  }
 }
 

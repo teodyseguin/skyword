@@ -37,6 +37,10 @@ function skyword_permission() {
       'title' => t('Allow to create an Author'),
       'description' => t('Create an author'),
     ),
+    'posts retrieve' => array(
+      'title' => t('Allow to retrieve a list of posts or specific post'),
+      'description' => t('Return a list or specific post(s)'),
+    ),
   );
 }
 
@@ -134,6 +138,7 @@ function skyword_services_resources() {
         ),
       ),
     ),
+
     'version' => array(
       'index' => array(
         'help' => 'Returns the version of this site.',
@@ -148,6 +153,7 @@ function skyword_services_resources() {
         'access arguments append' => TRUE
       ),
     ),
+
     'taxonomies' => array(
       'index' => array( 'help' => 'Returns a list of taxonomies', 'file' => array( 'type' => 'inc',
           'module' => 'skyword',
@@ -266,6 +272,7 @@ function skyword_services_resources() {
         ),
       ),
     ),
+
     'authors' => array(
       'index' => array(
         'help' => 'Returns the index of Authors.',
@@ -364,18 +371,42 @@ function skyword_services_resources() {
         'access arguments append' => TRUE,
       ),
     ),
+
     'posts' => array(
       'index' => array(
         'help' => 'Get the index of Posts',
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/posts',
+          'name' => 'src/Resources/posts',
         ),
         'callback' => '_skyword_posts_index',
         'access callback' => '_skyword_access',
-        'access arguments' => array('index posts'),
+        'access arguments' => array('posts retrieve'),
         'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'page',
+            'type' => 'int',
+            'description' => 'Starting page.',
+            'source' => array('param' => 'page'),
+            'optional' => TRUE,
+          ),
+          array(
+            'name' => 'per_page',
+            'type' => 'int',
+            'description' => 'The number to retrieve per page. Default is 250.',
+            'source' => array('param' => 'per_page'),
+            'optional' => TRUE,
+          ),
+          array(
+            'name' => 'fields',
+            'type' => 'string',
+            'description' => 'A comma separated list of fields to include.',
+            'source' => array('param' => 'fields'),
+            'optional' => TRUE,
+          ),
+        ),
       ),
       'retrieve' => array(
         'help' => 'Get a specific post',
@@ -414,6 +445,7 @@ function skyword_services_resources() {
         'access arguments append' => TRUE,
       ),
     ),
+
     'media' => array(
       'index' => array(
         'help' => 'Get the index of medias',
