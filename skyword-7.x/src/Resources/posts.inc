@@ -12,18 +12,18 @@ function _skyword_posts_index($page, $per_page, $fields) {
   return $controller->index($page, $per_page, $fields);
 }
 
-function _skyword_posts_retrieve() {
+function _skyword_posts_retrieve($id, $fields) {
   require drupal_get_path('module', 'skyword') . '/src/Controller/PostsController.php';
   $controller = new PostsController();
 
-  return $controller->retrieve($id);
+  return $controller->retrieve($id, $fields);
 }
 
-function _skyword_posts_create() {
+function _skyword_posts_create($data) {
   require drupal_get_path('module', 'skyword') . '/src/Controller/PostsController.php';
   $controller = new PostsController();
 
-  return $controller->create();
+  return $controller->create($data);
 }
 
 function _skyword_posts_update() {}
