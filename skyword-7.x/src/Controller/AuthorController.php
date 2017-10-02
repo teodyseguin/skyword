@@ -1,10 +1,19 @@
 <?php
 
-include 'BaseController.php';
-include 'ControllerInterface.php';
+include_once 'BaseController.php';
 
 class AuthorController extends BaseController {
   private $enabledFields;
+  private $role;
+
+  public function __construct() {
+    $this->role = $this->checkUserEntityRoleEnabled();
+    $this->setEnabledFields($this->role['fields']);
+  }
+
+  public function getEnabledFields() {
+    return $this->enabledFields;
+  }
 
   /**
    * Returns a list of Taxonomies
@@ -78,16 +87,6 @@ class AuthorController extends BaseController {
   public function delete() {}
 
   /**
-   * Build the data per count
-   *
-   * @param $per_page
-   *   the number of items to be included in a page
-   * @param $taxonomies
-   *   an array of taxonomies
-   */
-  private function buildDataWithCount($per_page, $taxonomies) {}
-
-  /**
    * Check which user role are enabled for skyword use
    */
   private function checkUserEntityRoleEnabled() {
@@ -115,18 +114,14 @@ class AuthorController extends BaseController {
    * Load the user fields
    */
   private function loadUsers($id = NULL) {
-    $role = $this->checkUserEntityRoleEnabled();
-
-    $this->setEnabledFields($role['fields']);
-
     $query = db_select('users_roles', 'ur');
 
     if ($id != NULL) {
       $query->condition('ur.uid', $id);
-      $query->condition('ur.rid', $role['role']);
+      $query->condition('ur.rid', $this->role['role']);
     }
     else {
-      $query->condition('ur.rid', $role['role']);
+      $query->condition('ur.rid', $this->role['role']);
     }
 
     $query->fields('ur', ['uid' => 'uid']);
