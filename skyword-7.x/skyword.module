@@ -41,6 +41,10 @@ function skyword_permission() {
       'title' => t('Allow to retrieve a list of posts or specific post'),
       'description' => t('Return a list or specific post(s)'),
     ),
+    'post create' => array(
+      'title' => t('Allow to create a post with specified type'),
+      'description' => t('Create a post'),
+    ),
   );
 }
 
@@ -413,24 +417,56 @@ function skyword_services_resources() {
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/posts',
+          'name' => 'src/Resources/posts',
         ),
         'callback' => '_skyword_posts_retrieve',
         'access callback' => '_skyword_access',
-        'access arguments' => array('retrieve post'),
+        'access arguments' => array('posts retrieve'),
         'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'id',
+            'type' => 'int',
+            'description' => 'The unique post id',
+            'source' => array('path' => '0'),
+            'optional' => TRUE,
+          ),
+          array(
+            'name' => 'fields',
+            'type' => 'string',
+            'description' => 'A comma separated list of fields to include.',
+            'source' => array('param' => 'fields'),
+            'optional' => TRUE,
+          ),
+        ),
       ),
       'create' => array(
         'help' => 'Create a post',
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resoruces/posts',
+          'name' => 'src/Resources/posts',
         ),
-        'callback' => '_skyword_posts_crete',
+        'callback' => '_skyword_posts_create',
         'access callback' => '_skyword_access',
-        'access arguments' => array('create post'),
+        'access arguments' => array('post create'),
         'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'data',
+            'type' => 'struct',
+            'description' => 'The post request data object.',
+            'source' => 'data',
+            'optional' => FALSE,
+          ),
+          array(
+            'name' => 'fields',
+            'type' => 'string',
+            'description' => 'A comma separated list of fields to include.',
+            'source' => array('param' => 'fields'),
+            'optional' => TRUE,
+          ),
+        ),
       ),
       'update' => array(
         'help' => 'Update a post',
