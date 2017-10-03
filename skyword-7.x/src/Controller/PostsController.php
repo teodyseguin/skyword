@@ -5,13 +5,20 @@ include_once 'AuthorController.php';
 
 class PostsController extends BaseController {
    private $authorEnabledFields;
+   private $dataFields;
+   private $data;
 
    /**
     * Initialize some values
     */
-   public function __construct() {
+   public function __construct($data = NULL) {
      $author = new AuthorController();
      $this->authorEnabledFields = $author->getEnabledFields();
+
+     if ($data != NULL) {
+       $this->data = $data;
+       $this->dataFields = field_info_instances('node', $data['type']);
+     }
    }
 
   /**
@@ -48,11 +55,13 @@ class PostsController extends BaseController {
   /**
    * Create a Post
    */
-  public function create($data) {
-    $this->validatePostData($data);
+  public function create() {
+    $test = $this->validatePostData();
+
+    if (!$test)  return services_error(t('Required fields are missing.'), 500);
 
     try {
-      return 'test';  
+      return $this->buildPostData();
     }
     catch (Exception $e) {
       return services_error(t('Cannot create a post.'), 500);
@@ -212,23 +221,41 @@ class PostsController extends BaseController {
     return $this->buildPosts($resultTypes);
   }
 
-  private function validatePostData($data) {
+  /**
+   * Validate the post request data if it has the minimal
+   * required fields for creating a certain type of node
+   */
+  private function validatePostData() {
     $field_match = 0;
 
-    if (!isset($data['type'])) return FALSE;
-    if (!isset($data['author'])) return FALSE;
+    if (!isset($this->data['type'])) return FALSE;
+    if (!isset($this->data['author'])) return FALSE;
 
-    $fields = field_info_instances('node', $data['type']);
-
-    object_log('loaded fields', $fields);
-
-    foreach ($data['fields'] as $key => $field) {
-      foreach ($fields as $machineName => $f) {
+    // check if the submitted fields are within the
+    // structure of the given node type ($this->data['type'])
+    foreach ($this->data['fields'] as $key => $field) {
+      foreach ($this->dataFields as $machineName => $f) {
         if ($f['label'] == $field['name']) $field_match++;
       }      
     }
 
     if ($field_match == 0) return FALSE;
+  }
+
+  private function buildPostData() {
+    $post = new stdClass();
+    $post->title = $this->data['title'];
+    $post->type = $this->data['type'];
+    node_object_prepare($post);
+    $post->language = LANGUAGE_NONE;
+    $post->uid = $this->data['id'];
+    $post->status = 1;
+    $post->promote = 0;
+    $post->comment = 1;
+    $post->created = time();
+
+    // foreach ($this->dataFields as $key => $field) {
+    // }
   }
 }
 
