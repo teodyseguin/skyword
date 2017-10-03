@@ -45,6 +45,10 @@ function skyword_permission() {
       'title' => t('Allow to create a post with specified type'),
       'description' => t('Create a post'),
     ),
+    'post delete' => array(
+      'title' => t('Allow to delete a post from the API'),
+      'description' => t('Delete a post'),
+    ),
   );
 }
 
@@ -468,17 +472,26 @@ function skyword_services_resources() {
           ),
         ),
       ),
-      'update' => array(
-        'help' => 'Update a post',
+      'delete' => array(
+        'help' => 'Delete a post',
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/posts',
+          'name' => 'src/Resources/posts',
         ),
-        'callback' => '_skyword_posts_update',
+        'callback' => '_skyword_posts_delete',
         'access callback' => '_skyword_access',
-        'access arguments' => array('update post'),
+        'access arguments' => array('post delete'),
         'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'id',
+            'type' => 'int',
+            'description' => 'The unique identifier of the post',
+            'source' => array('path' => '0'),
+            'optional' => FALSE,
+          ),
+        ),
       ),
     ),
 

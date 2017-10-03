@@ -26,5 +26,10 @@ function _skyword_posts_create($data) {
   return $controller->create();
 }
 
-function _skyword_posts_update() {}
+function _skyword_posts_delete($id) {
+  require drupal_get_path('module', 'skyword') . '/src/Controller/PostsController.php';
+  $controller = new PostsController();
+
+  return $controller->delete($id);
+}
 

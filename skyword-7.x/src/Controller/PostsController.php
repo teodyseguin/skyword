@@ -56,12 +56,12 @@ class PostsController extends BaseController {
    * Create a Post
    */
   public function create() {
-    $test = $this->validatePostData();
+    $test = $this->validatePostData($this->data, $this->dataFields);
 
-    if (!$test)  return services_error(t('Required fields are missing.'), 500);
+    if (!$test) return services_error(t('Required fields are missing.'), 500);
 
     try {
-      return $this->buildPostData();
+      return $this->buildPostData($this->data, $this->dataFields);
     }
     catch (Exception $e) {
       return services_error(t('Cannot create a post.'), 500);
@@ -76,7 +76,18 @@ class PostsController extends BaseController {
   /**
    * Delete a Taxonomy
    */
-  public function delete() {}
+  public function delete($id) {
+    try {
+      $deleted = db_delete('node');
+      $deleted->condition('nid', $id);
+      $deleted->execute();
+
+      return $id;
+    }
+    catch (Exception $e) {
+      return services_error(t('Cannot delete a post'), 500);
+    }
+  }
 
   /**
    * Get the posts from the node table
@@ -224,38 +235,66 @@ class PostsController extends BaseController {
   /**
    * Validate the post request data if it has the minimal
    * required fields for creating a certain type of node
+   *
+   * @param $data
+   *   the post request data object
    */
-  private function validatePostData() {
+  private function validatePostData($data, $dataFields) {
     $field_match = 0;
 
-    if (!isset($this->data['type'])) return FALSE;
-    if (!isset($this->data['author'])) return FALSE;
+    if (empty($data['type'])) return FALSE;
+    if (empty($data['author'])) return FALSE;
+    if (empty($data['title'])) return FALSE;
 
     // check if the submitted fields are within the
     // structure of the given node type ($this->data['type'])
-    foreach ($this->data['fields'] as $key => $field) {
-      foreach ($this->dataFields as $machineName => $f) {
+    foreach ($data['fields'] as $key => $field) {
+      foreach ($dataFields as $machineName => $f) {
         if ($f['label'] == $field['name']) $field_match++;
       }      
     }
 
     if ($field_match == 0) return FALSE;
+
+    return TRUE;
   }
 
-  private function buildPostData() {
+  /**
+   * Build the post node data
+   *
+   * @parm $data
+   *   the post request data object
+   */
+  private function buildPostData($data, $dataFields) {
+    $ln = LANGUAGE_NONE;
     $post = new stdClass();
-    $post->title = $this->data['title'];
-    $post->type = $this->data['type'];
+    $post->title = $data['title'];
+    $post->type = $data['type'];
     node_object_prepare($post);
     $post->language = LANGUAGE_NONE;
-    $post->uid = $this->data['id'];
+    $post->uid = $data['author'];
     $post->status = 1;
     $post->promote = 0;
-    $post->comment = 1;
     $post->created = time();
 
-    // foreach ($this->dataFields as $key => $field) {
-    // }
+    foreach ($data['fields'] as $key => $field) {
+      foreach ($dataFields as $machineName => $f) {
+        if ($field['type'] != 'image') {
+          if ($f['label'] == $field['name']) {
+            $post->{$machineName}[$ln][0]['value'] = $field['value'];
+          }
+          elseif ($field['type'] == 'image') {
+            $image = file_get_contents($field['value']);
+            $file = file_save_data($image, NULL, FILE_EXISTS_REPLACE);
+            $post->{$machineName}[$ln][0]['fid'] = $file->fid;
+          }
+        }
+      }
+    }
+
+    node_save($post);
+
+    return $data;
   }
 }
 
