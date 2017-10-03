@@ -21,10 +21,15 @@ function _skyword_posts_retrieve($id, $fields) {
 
 function _skyword_posts_create($data) {
   require drupal_get_path('module', 'skyword') . '/src/Controller/PostsController.php';
-  $controller = new PostsController();
+  $controller = new PostsController($data);
 
-  return $controller->create($data);
+  return $controller->create();
 }
 
-function _skyword_posts_update() {}
+function _skyword_posts_delete($id) {
+  require drupal_get_path('module', 'skyword') . '/src/Controller/PostsController.php';
+  $controller = new PostsController();
+
+  return $controller->delete($id);
+}
 
