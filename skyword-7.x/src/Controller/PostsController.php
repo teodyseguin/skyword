@@ -5,13 +5,20 @@ include_once 'AuthorController.php';
 
 class PostsController extends BaseController {
    private $authorEnabledFields;
+   private $dataFields;
+   private $data;
 
    /**
     * Initialize some values
     */
-   public function __construct() {
+   public function __construct($data = NULL) {
      $author = new AuthorController();
      $this->authorEnabledFields = $author->getEnabledFields();
+
+     if ($data != NULL) {
+       $this->data = $data;
+       $this->dataFields = field_info_instances('node', $data['type']);
+     }
    }
 
   /**
@@ -48,11 +55,13 @@ class PostsController extends BaseController {
   /**
    * Create a Post
    */
-  public function create($data) {
-    $this->validatePostData($data);
+  public function create() {
+    $test = $this->validatePostData($this->data, $this->dataFields);
+
+    if (!$test) return services_error(t('Required fields are missing.'), 500);
 
     try {
-      return 'test';  
+      return $this->buildPostData($this->data, $this->dataFields);
     }
     catch (Exception $e) {
       return services_error(t('Cannot create a post.'), 500);
@@ -67,7 +76,18 @@ class PostsController extends BaseController {
   /**
    * Delete a Taxonomy
    */
-  public function delete() {}
+  public function delete($id) {
+    try {
+      $deleted = db_delete('node');
+      $deleted->condition('nid', $id);
+      $deleted->execute();
+
+      return $id;
+    }
+    catch (Exception $e) {
+      return services_error(t('Cannot delete a post'), 500);
+    }
+  }
 
   /**
    * Get the posts from the node table
@@ -212,23 +232,69 @@ class PostsController extends BaseController {
     return $this->buildPosts($resultTypes);
   }
 
-  private function validatePostData($data) {
+  /**
+   * Validate the post request data if it has the minimal
+   * required fields for creating a certain type of node
+   *
+   * @param $data
+   *   the post request data object
+   */
+  private function validatePostData($data, $dataFields) {
     $field_match = 0;
 
-    if (!isset($data['type'])) return FALSE;
-    if (!isset($data['author'])) return FALSE;
+    if (empty($data['type'])) return FALSE;
+    if (empty($data['author'])) return FALSE;
+    if (empty($data['title'])) return FALSE;
 
-    $fields = field_info_instances('node', $data['type']);
-
-    object_log('loaded fields', $fields);
-
+    // check if the submitted fields are within the
+    // structure of the given node type ($this->data['type'])
     foreach ($data['fields'] as $key => $field) {
-      foreach ($fields as $machineName => $f) {
+      foreach ($dataFields as $machineName => $f) {
         if ($f['label'] == $field['name']) $field_match++;
       }      
     }
 
     if ($field_match == 0) return FALSE;
+
+    return TRUE;
+  }
+
+  /**
+   * Build the post node data
+   *
+   * @parm $data
+   *   the post request data object
+   */
+  private function buildPostData($data, $dataFields) {
+    $ln = LANGUAGE_NONE;
+    $post = new stdClass();
+    $post->title = $data['title'];
+    $post->type = $data['type'];
+    node_object_prepare($post);
+    $post->language = LANGUAGE_NONE;
+    $post->uid = $data['author'];
+    $post->status = 1;
+    $post->promote = 0;
+    $post->created = time();
+
+    foreach ($data['fields'] as $key => $field) {
+      foreach ($dataFields as $machineName => $f) {
+        if ($field['type'] != 'image') {
+          if ($f['label'] == $field['name']) {
+            $post->{$machineName}[$ln][0]['value'] = $field['value'];
+          }
+          elseif ($field['type'] == 'image') {
+            $image = file_get_contents($field['value']);
+            $file = file_save_data($image, NULL, FILE_EXISTS_REPLACE);
+            $post->{$machineName}[$ln][0]['fid'] = $file->fid;
+          }
+        }
+      }
+    }
+
+    node_save($post);
+
+    return $data;
   }
 }
 

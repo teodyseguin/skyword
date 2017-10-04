@@ -45,6 +45,18 @@ function skyword_permission() {
       'title' => t('Allow to create a post with specified type'),
       'description' => t('Create a post'),
     ),
+    'post delete' => array(
+      'title' => t('Allow to delete a post from the API'),
+      'description' => t('Delete a post'),
+    ),
+    'media retrieve' => array(
+      'title' => t('Allow to retrieve a list of media or specific media'),
+      'description' => t('Return a list or specific media(s)'),
+    ),
+    'media create' => array(
+      'title' => t('Allow to create a media'),
+      'description' => t('Create a media'),
+    )
   );
 }
 
@@ -468,17 +480,26 @@ function skyword_services_resources() {
           ),
         ),
       ),
-      'update' => array(
-        'help' => 'Update a post',
+      'delete' => array(
+        'help' => 'Delete a post',
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/posts',
+          'name' => 'src/Resources/posts',
         ),
-        'callback' => '_skyword_posts_update',
+        'callback' => '_skyword_posts_delete',
         'access callback' => '_skyword_access',
-        'access arguments' => array('update post'),
+        'access arguments' => array('post delete'),
         'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'id',
+            'type' => 'int',
+            'description' => 'The unique identifier of the post',
+            'source' => array('path' => '0'),
+            'optional' => FALSE,
+          ),
+        ),
       ),
     ),
 
@@ -488,50 +509,78 @@ function skyword_services_resources() {
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/media',
+          'name' => 'src/Resources/media',
         ),
-        'callback' => '_skyword_medias_index',
+        'callback' => '_skyword_media_index',
         'access callback' => '_skyword_access',
-        'access arguments' => array('index medias'),
+        'access arguments' => array('media retrieve'),
         'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'page',
+            'type' => 'int',
+            'description' => 'Starting page.',
+            'source' => array('param' => 'page'),
+            'optional' => TRUE,
+          ),
+          array(
+            'name' => 'per_page',
+            'type' => 'int',
+            'description' => 'The number to retrieve per page. Default is 250.',
+            'source' => array('param' => 'per_page'),
+            'optional' => TRUE,
+          ),
+          array(
+            'name' => 'fields',
+            'type' => 'string',
+            'description' => 'A comma separated list of fields to include.',
+            'source' => array('param' => 'fields'),
+            'optional' => TRUE,
+          ),
+        ),
       ),
       'retrieve' => array(
         'help' => 'Retrieve a specific media',
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/media',
+          'name' => 'src/Resources/media',
         ),
-        'callback' => '_skyword_medias_retrieve',
+        'callback' => '_skyword_media_retrieve',
         'access callback' => '_skyword_access',
-        'access arguments' => array('retrieve media'),
+        'access arguments' => array('media retrieve'),
         'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'id',
+            'type' => 'int',
+            'description' => 'The unique identifier of the media',
+            'source' => array('path' => '0'),
+            'optional' => FALSE,
+          ),
+          array(
+            'name' => 'fields',
+            'type' => 'string',
+            'description' => 'A comma separated list of fields to include.',
+            'source' => array('param' => 'fields'),
+            'optional' => TRUE,
+          ),
+        ),
       ),
       'create' => array(
         'help' => 'Create a media',
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/media',
+          'name' => 'src/Resources/media',
         ),
-        'callback' => '_skyword_medias_create',
+        'callback' => '_skyword_media_create',
         'access callback' => '_skyword_access',
-        'access arguments' => array('create media'),
-        'access arguments append' => TRUE,
-      ),
-      'update' => array(
-        'help' => 'Update a media',
-        'file' => array(
-          'type' => 'inc',
-          'module' => 'skyword',
-          'name' => 'resources/media',
-        ),
-        'callback' => '_skyword_medias_update',
-        'access callback' => '_skyword_access',
-        'access arguments' => array('update media'),
+        'access arguments' => array('media create'),
         'access arguments append' => TRUE,
       ),
     ),
+
     'content-types' => array(
       'index' => array(
         'help' => 'Return index of content types',
