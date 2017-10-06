@@ -18,7 +18,7 @@ class ContentTypesController extends BaseController {
    */
   public function index($page = 1, $per_page = 250, $fields = NULL) {
     try {
-      return $this->getTypes();  
+      return $this->getTypes();
     }
     catch (Exception $e) {
       return services_error(t('Cannot query content types table.'), 500);
@@ -35,7 +35,7 @@ class ContentTypesController extends BaseController {
    */
   public function retrieve($type, $fields) {
     try {
-      return $this->getTypes($type);   
+      return $this->getTypes($type);
     }
     catch (Exception $e) {
       return services_error(t('Cannot query content types table.'), 500);
@@ -44,11 +44,98 @@ class ContentTypesController extends BaseController {
 
   public function create($data) {
     try {
-      return $this->createType($data); 
+      watchdog('skyword', '<pre>'. print_r($data, true) . '</pre>');
+
+        if (!$this->valid($data)) {
+
+        }
+
+      // use get_t() to get the name of our localization function for translation
+      // during install, when t() is not available.
+      $t = get_t();
+      // Define the node type.
+      $skyword_content_type = array(
+        'type' => $data['id'],
+        'name' => $data['name'],
+        'base' => 'node_content',
+        'description' => $data['description'],
+        'body_label' => ''
+      );
+
+      // Complete the node type definition by setting any defaults not explicitly
+      // declared above.
+      // http://api.drupal.org/api/function/node_type_set_defaults/7
+      $content_type = node_type_set_defaults($skyword_content_type);
+      node_type_save($content_type);
+
+      // Next we want to programmatically add our fields.
+      if ($data['fields']) {
+        foreach($data['fields'] as $field) {
+          if ($field['id'] !== 'title' && !field_info_field($field['id'])) {
+            switch($field['datatype']) {
+              case 'text':
+                // Create the field base.
+                $field = array(
+                  'field_name' => $field['id'],
+                  'type' => 'text',
+                );
+                field_create_field($field);
+
+                // Create the field instance on the bundle.
+                $instance = array(
+                  'field_name' => $field['id'],
+                  'entity_type' => 'node',
+                  'label' => 'My Field Name',
+                  'bundle' => $data['id'],
+                  // If you don't set the "required" property then the field wont be required by default.
+                  'required' => $field['required'],
+                  'widget' => array(
+                    'type' => 'textfield',
+                  ),
+                );
+                field_create_instance($instance);
+              break;
+              case 'richtext':
+                // Create the field base.
+                $field = array(
+                  'field_name' => $field['id'],
+                  'type' => 'text_long',
+                );
+                field_create_field($field);
+
+                // Create the field instance on the bundle.
+                $instance = array(
+                  'field_name' => $field['id'],
+                  'entity_type' => 'node',
+                  'label' => 'My Field Name',
+                  'bundle' => $data['id'],
+                  // If you don't set the "required" property then the field wont be required by default.
+                  'required' => $field['required'],
+                  'widget' => array(
+                    'type' => 'text_textarea',
+                  ),
+                  'format' => 'filter_html',
+                );
+                field_create_instance($instance);
+              break;
+            }
+          }
+        }
+      }
+
+      return [];
     }
     catch (Exception $e) {
       return services_error(t('Cannot create a content type.'), 500);
     }
+  }
+
+  /**
+  * Validation checks to prevent us from breaking Drupal!
+  */
+  private function valid($data) {
+
+    return true;
   }
 
   /**
@@ -101,7 +188,7 @@ class ContentTypesController extends BaseController {
 
     if ($type != NULL) {
       $query->condition('nt.type', $type);
-      $query->fields('nt', ['type', 'name', 'description']); 
+      $query->fields('nt', ['type', 'name', 'description']);
 
       $obj = $query->execute()->fetchObject();
 
@@ -115,18 +202,4 @@ class ContentTypesController extends BaseController {
     return $query->execute()->fetchAll();
   }
 
-  private function createType($data) {
-    /*$form_state = array();
-    $form_state['values']['type'] = $data['name'];
-    $form_state['values']['name'] = $data['name'];
-    $form_state['values']['description'] = $data['description'];
-    $form_state['values']['title_label'] = 'Title';
-    $form_state['values']['node_preview'] = 1;
-    $form_state['values']['comment'] = 1;
-    $form_state['op'] = 'Save content type';
-    drupal_form_submit('node_type_form', $form_state);*/
-
-    return new stdClass();
-  }
 }
-

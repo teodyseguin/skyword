@@ -598,7 +598,7 @@ function skyword_services_resources() {
       ),
     ),
 
-    'content-types' => array(
+    'content-type' => array(
       'index' => array(
         'help' => 'Return index of content types',
         'file' => array(
