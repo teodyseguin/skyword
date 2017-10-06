@@ -185,19 +185,24 @@ class MediaController extends BaseController {
    * @return an array or a single object
    */
   private function getMedias($id = NULL) {
-    $query = db_select('file_managed', 'f');
+    $this->query = db_select('file_managed', 'f');
 
     if ($id != NULL) {
-      $query->condition('f.fid', $id);
-      $query->fields('f', ['fid', 'uri', 'filemime']);
-      $obj = $query->execute()->fetchObject();
+      $this->query->condition('f.fid', $id);
+      $this->query->fields('f', ['fid', 'uri', 'filemime']);
+      $this->pager();
+
+      $obj = $this->query->execute()->fetchObject();
 
       return $this->buildSingleMedia($obj);
     }
 
-    $query->fields('f', ['fid', 'uri', 'filemime']);
-    $result = $query->execute()->fetchAll();
+    $this->query->fields('f', ['fid', 'uri', 'filemime']);
+    $this->pager();
+
+    $result = $this->query->execute()->fetchAll();
 
     return $this->buildMedias($result);
   }
 }
+
