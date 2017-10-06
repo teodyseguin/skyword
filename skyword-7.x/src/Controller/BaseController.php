@@ -3,30 +3,41 @@
 class BaseController {
 
   protected $query;
+  protected $page;
+  protected $per_page;
+  protected $fields;
 
   /**
   * Used to get and return Pager data sent via post requests.
   */
   protected function pager() {
-    $current_page = $_GET['page'];
-    $per_page = $_GET['per_page'];
-    $first_record = $current_page * $per_page;
+    $current_page = $this->page;
+    $per_page = $this->per_page;
 
+    if (!$current_page) return;
+    if (!$per_page) return;
+
+    $first_record = $current_page * $per_page;
     $next = $current_page + 1;
     $prev = $current_page - 1;
     $total = $this->query->countQuery()->execute()->fetchField();
+
     $last =  $total % $per_page;
     $url = (isset($_SERVER['HTTPS']) ? "https:" : "http:") .$_SERVER["HTTP_HOST"].strtok($_SERVER["REQUEST_URI"],'?');
 
     drupal_add_http_header('X-Total-Count', $total, TRUE);
+
     if ($next < $last) {
       drupal_add_http_header('LINK', "<{$url}?page={$next}&per_page={$per_page}>; rel=\"next\"", TRUE);
     }
+
     drupal_add_http_header('LINK', "<{$url}?page={$last}&per_page={$per_page}>; rel=\"last\"", TRUE);
     drupal_add_http_header('LINK', "<{$url}?page=1&per_page={$per_page}>; rel=\"first\"", TRUE);
+
     if ($prev > 0) {
       drupal_add_http_header('LINK', "<{$url}?page={$prev}&per_page={$per_page}>; rel=\"prev\"", TRUE);
     }
+
     $this->query->range($first_record, $per_page);
   }
 

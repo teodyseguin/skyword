@@ -33,6 +33,10 @@ class PostsController extends BaseController {
    */
   public function index($page = 1, $per_page = 250, $fields = NULL) {
     try {
+      $this->page = $page;
+      $this->per_page = $per_page;
+      $this->fields = $fields;
+
       return $this->getPosts();
     }
     catch (Exception $e) {

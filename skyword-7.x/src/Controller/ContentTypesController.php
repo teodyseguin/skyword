@@ -17,6 +17,10 @@ class ContentTypesController extends BaseController {
    *   the fields to include from the result
    */
   public function index($page = 1, $per_page = 250, $fields = NULL) {
+    $this->page = $page;
+    $this->per_page = $per_page;
+    $this->fields = $fields;
+
     try {
       return $this->getTypes();
     }
@@ -184,7 +188,6 @@ class ContentTypesController extends BaseController {
     $types = parent::getEnabledContentTypes();
 
     $this->query = db_select('node_type', 'nt');
-    $this->query->condition('nt.type', $types, 'IN');
 
     if ($type != NULL) {
       $this->query->condition('nt.type', $type);
@@ -198,10 +201,16 @@ class ContentTypesController extends BaseController {
       return $obj;
     }
 
+    $this->query->condition('nt.type', $types, 'IN');
     $this->query->fields('nt', ['type', 'name', 'description']);
     $this->pager();
 
-    return $this->query->execute()->fetchAll();
-  }
+    $obj = new stdClass();
+    $obj->total = $this->query->execute()->rowCount();
+    $obj->page = $this->page ? $this->page : 1;
+    $obj->elements = $this->query->execute()->fetchAll();
 
+    return $obj;
+  }
 }
+

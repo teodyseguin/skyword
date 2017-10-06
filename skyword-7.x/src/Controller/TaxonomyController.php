@@ -17,6 +17,10 @@ class TaxonomyController extends BaseController {
    */
   public function index($page = 1, $per_page = 250, $fields = NULL, $id = NULL) {
     try {
+      $this->page = $page;
+      $this->per_page = $per_page;
+      $this->fields = $fields;
+
       $this->query = db_select('taxonomy_vocabulary', 'v');
       $this->query->join('skyword_entities', 'e', 'e.bundle = v.machine_name');
       $this->query->condition('e.status', 1);
