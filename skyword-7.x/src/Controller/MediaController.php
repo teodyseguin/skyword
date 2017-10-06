@@ -104,7 +104,6 @@ class MediaController extends BaseController {
         'location' => $file_saved->uri,
       );
     } catch (Exeption $e) {
-      watchdog_exception('skyword', $e);
       return array(
         'status' => 0
       );

@@ -23,6 +23,7 @@ class BaseController {
     $total = $this->query->countQuery()->execute()->fetchField();
 
     $last =  $total % $per_page;
+
     $url = (isset($_SERVER['HTTPS']) ? "https:" : "http:") .$_SERVER["HTTP_HOST"].strtok($_SERVER["REQUEST_URI"],'?');
 
     drupal_add_http_header('X-Total-Count', $total, TRUE);
@@ -38,7 +39,13 @@ class BaseController {
       drupal_add_http_header('LINK', "<{$url}?page={$prev}&per_page={$per_page}>; rel=\"prev\"", TRUE);
     }
 
-    $this->query->range($first_record, $per_page);
+    if ($first_record >= $per_page) {
+      $this->query->range(0, $per_page);
+    }
+    else {
+      $this->query->range($first_record, $per_page);
+    }
+
   }
 
   /**
