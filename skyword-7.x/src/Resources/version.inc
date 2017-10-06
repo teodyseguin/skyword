@@ -14,7 +14,6 @@ function _skyword_version_index() {
     );
   }
   catch (Exception $e) {
-    watchdog_exception($e, 'skyword');
     throw $e;
   }
 }

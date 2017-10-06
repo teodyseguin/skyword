@@ -48,12 +48,6 @@ class ContentTypesController extends BaseController {
 
   public function create($data) {
     try {
-      watchdog('skyword', '<pre>'. print_r($data, true) . '</pre>');
-
-        if (!$this->valid($data)) {
-
-        }
-
       // use get_t() to get the name of our localization function for translation
       // during install, when t() is not available.
       $t = get_t();
