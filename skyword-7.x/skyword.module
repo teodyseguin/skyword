@@ -56,7 +56,15 @@ function skyword_permission() {
     'media create' => array(
       'title' => t('Allow to create a media'),
       'description' => t('Create a media'),
-    )
+    ),
+    'content types retrieve' => array(
+      'title' => t('Allow to retrieve a list or specific content type'),
+      'description' => t('Return a list or specific content type'),
+    ),
+    'content types create' => array(
+      'title' => t('Allow to create a content type'),
+      'description' => t('Create a content type'),
+    ),
   );
 }
 
@@ -587,49 +595,85 @@ function skyword_services_resources() {
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/content_types',
+          'name' => 'src/Resources/content_types',
         ),
         'callback' => '_skyword_content_types_index',
         'access callback' => '_skyword_access',
-        'access arguments' => array('index content types'),
+        'access arguments' => array('content types retrieve'),
         'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'page',
+            'type' => 'int',
+            'description' => 'Starting page.',
+            'source' => array('param' => 'page'),
+            'optional' => TRUE,
+          ),
+          array(
+            'name' => 'per_page',
+            'type' => 'int',
+            'description' => 'The number to retrieve per page. Default is 250.',
+            'source' => array('param' => 'per_page'),
+            'optional' => TRUE,
+          ),
+          array(
+            'name' => 'fields',
+            'type' => 'string',
+            'description' => 'A comma separated list of fields to include.',
+            'source' => array('param' => 'fields'),
+            'optional' => TRUE,
+          ),
+        ),
       ),
       'retrieve' => array(
         'help' => 'Retrieve a specific content type',
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/content_types',
+          'name' => 'src/Resources/content_types',
         ),
         'callback' => '_skyword_content_types_retrieve',
         'access callback' => '_skyword_access',
-        'access arguments' => array('retrieve content type'),
+        'access arguments' => array('content types retrieve'),
         'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'type',
+            'type' => 'string',
+            'description' => 'The unique identifier of the content type',
+            'source' => array('path' => '0'),
+            'optional' => FALSE,
+          ),
+          array(
+            'name' => 'fields',
+            'type' => 'string',
+            'description' => 'A comma separated list of fields to include.',
+            'source' => array('param' => 'fields'),
+            'optional' => TRUE,
+          ),
+        ),
       ),
       'create' => array(
         'help' => 'Create a content type',
         'file' => array(
           'type' => 'inc',
           'module' => 'skyword',
-          'name' => 'resources/content_types',
+          'name' => 'src/Resources/content_types',
         ),
         'callback' => '_skyword_content_types_create',
         'access callback' => '_skyword_access',
-        'access arguments' => array('create content type'),
+        'access arguments' => array('content types create'),
         'access arguments append' => TRUE,
-      ),
-      'update' => array(
-        'help' => 'Update a content type',
-        'file' => array(
-          'type' => 'inc',
-          'module' => 'skyword',
-          'name' => 'resources/content_types',
+        'args' => array(
+          array(
+            'name' => 'data',
+            'description' => 'The post request data',
+            'type' => 'struct',
+            'source' => 'data',
+            'optional' => FALSE,
+          ),
         ),
-        'callback' => '_skyword_content_types_update',
-        'access callback' => '_skyword_access',
-        'access arguments' => array('update content type'),
-        'access arguments append' => TRUE,
-      ), // Not listed but maybe this is not needed.
+      ),
     ),
   );
 }
