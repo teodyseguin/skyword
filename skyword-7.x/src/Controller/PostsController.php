@@ -95,16 +95,17 @@ class PostsController extends BaseController {
   private function getPostsTypes($id = NULL) {
     $contentTypes = parent::getEnabledContentTypes();
 
-    $query = db_select('node', 'n');
-    $query->condition('n.type', $contentTypes, 'IN');
-    $query->condition('n.status', 1);
+    $this->query = db_select('node', 'n');
+    $this->query->condition('n.type', $contentTypes, 'IN')
+         ->condition('n.status', 1);
 
     if ($id != NULL) {
-      $query->condition('n.nid', $id);
+      $this->query->condition('n.nid', $id);
     }
 
-    $query->fields('n', ['nid']);
-    $result = $query->execute();
+    $this->query->fields('n', ['nid']);
+    $this->pager();
+    $result = $this->query->execute();
 
     return (object)[
       'result' => $result->fetchAll(),
@@ -203,7 +204,7 @@ class PostsController extends BaseController {
     $posts->elements = [];
 
     $posts->total = $resultTypes->count;
-    $posts->page = 1;
+    $posts->page = $_GET['page'];
 
     foreach ($resultTypes->result as $row) {
       $node = node_load($row->nid);
@@ -251,7 +252,7 @@ class PostsController extends BaseController {
     foreach ($data['fields'] as $key => $field) {
       foreach ($dataFields as $machineName => $f) {
         if ($f['label'] == $field['name']) $field_match++;
-      }      
+      }
     }
 
     if ($field_match == 0) return FALSE;
@@ -297,4 +298,3 @@ class PostsController extends BaseController {
     return $data;
   }
 }
-

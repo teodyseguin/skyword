@@ -17,20 +17,20 @@ class TaxonomyController extends BaseController {
    */
   public function index($page = 1, $per_page = 250, $fields = NULL, $id = NULL) {
     try {
-      $query = db_select('taxonomy_vocabulary', 'v');
-      $query->join('skyword_entities', 'e', 'e.bundle = v.machine_name');
-      $query->condition('e.status', 1);
+      $this->query = db_select('taxonomy_vocabulary', 'v');
+      $this->query->join('skyword_entities', 'e', 'e.bundle = v.machine_name');
+      $this->query->condition('e.status', 1);
 
       if ($id !== NULL) {
-        $query->condition('v.vid', $id);
+        $this->query->condition('v.vid', $id);
       }
 
-      $query->fields('v', ['vid' => 'vid', 'machine_name' => 'machine_name', 'description' => 'description']);
+      $this->query->fields('v', ['vid' => 'vid', 'machine_name' => 'machine_name', 'description' => 'description']);
 
-      $start = ($page-1) * $per_page;
-      $end = $page * $per_page;
+      $this->pager();
+      $result = $this->query->execute();
 
-      return $this->buildData($query->execute());
+      return $this->buildData($this->query->execute());
     }
     catch (Exception $e) {
       return services_error(t('Unable to query taxonomy table.'), 500);
@@ -252,4 +252,3 @@ class TaxonomyController extends BaseController {
     return db_query("SELECT * FROM {taxonomy_term_data} WHERE vid = :vid", [':vid' => $vid])->rowCount();
   }
 }
-
