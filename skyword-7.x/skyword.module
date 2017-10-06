@@ -578,6 +578,15 @@ function skyword_services_resources() {
         'access callback' => '_skyword_access',
         'access arguments' => array('media create'),
         'access arguments append' => TRUE,
+        'args' => array(
+          array(
+            'name' => 'file',
+            'type' => 'array',
+            'description' => t('An array representing a file'),
+            'source' => 'data',
+            'optional' => FALSE,
+          )
+        ),
       ),
     ),
 
@@ -686,4 +695,3 @@ function skyword_entity_data($entity_type, $bundle) {
 
   return $result;
 }
-

@@ -26,8 +26,8 @@ class MediaController extends BaseController {
       return $this->getMedias();
     }
     catch (Exception $e) {
-      return services_error(t('Cannot fetch all the medias.'), 500); 
-    } 
+      return services_error(t('Cannot fetch all the medias.'), 500);
+    }
   }
 
   /**
@@ -47,14 +47,93 @@ class MediaController extends BaseController {
     }
     catch (Exception $e) {
       return services_error(t('Cannot fetch the media'), 500);
-    } 
+    }
   }
 
-  public function create() {}
+  /**
+  * Used to create a file.
+  */
+  public function create($file) {
+    try {
+      $headers = getallheaders();
+      preg_match('/filename\=(\".*\")/', $headers['Content-Disposition'], $matches);
+
+      // Adds backwards compatability with regression fixed in #1083242
+      // $file['file'] can be base64 encoded file so we check whether it is
+      // file array or file data.
+      $file = $this->arg_value($file, 'file');
+      $filename = rtrim($matches[1], '"');
+      $filename = substr($filename, 1, strlen($filename));
+
+      if (!isset($file['file']) || empty($file['filename'])) {
+        return services_error(t("Missing data the file upload can not be completed"), 500);
+      }
+
+      // Sanitize the file extension, name, path and scheme provided by the user.
+      $destination = empty($file['filepath'])
+        ? file_default_scheme() . '://' . $file['filename']
+        : $this->file_check_destination_uri($file['filepath']);
+
+      $dir = drupal_dirname($destination);
+      // Build the destination folder tree if it doesn't already exists.
+      if (!file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
+        return services_error(t("Could not create destination directory for file."), 500);
+      }
+
+      // Write the file
+      if (!$file_saved = file_save_data(base64_decode($file['file']), $destination)) {
+        return services_error(t("Could not write file to destination"), 500);
+      }
+
+      if (isset($file['status']) && $file['status'] == 0) {
+        // Save as temporary file.
+        $file_saved->status = 0;
+        file_save($file_saved);
+      }
+      else {
+        // Required to be able to reference this file.
+        file_usage_add($file_saved, 'services', 'files', $file_saved->fid);
+      }
+
+      return array(
+        'id' => $file_saved->fid,
+        'location' => $file_saved->uri,
+      );
+    } catch (Exeption $e) {
+      watchdog_exception('skyword', $e);
+      return array(
+        'status' => 0
+      );
+    }
+  }
 
   public function update() {}
 
   public function delete() {}
+
+
+  /**
+  * Used for helping with the posting data.
+  */
+  private function arg_value($data) {
+    if (isset($data[$field]) && count($data) == 1 && is_array($data[$field])) {
+      return $data[$field];
+    }
+    return $data;
+  }
+
+  /**
+  * Check the file destination.
+  */
+  private function file_check_destination_uri($uri) {
+    $scheme = strstr($uri, '://', TRUE);
+    $path = $scheme ? substr($uri, strlen("$scheme://")) : $uri;
+
+    // Sanitize the file extension, name, path and scheme provided by the user.
+    $scheme = _services_file_check_destination_scheme($scheme);
+    $path = _services_file_check_destination($path);
+    return "$scheme://$path";
+  }
 
   /**
    * Construct a single media object
@@ -70,7 +149,7 @@ class MediaController extends BaseController {
     $file->type = $obj->filemime;
     $file->url = file_create_url($obj->uri);
 
-    return $file; 
+    return $file;
   }
 
   /**
@@ -93,7 +172,7 @@ class MediaController extends BaseController {
       $files[] = $f;
     }
 
-    return $files; 
+    return $files;
   }
 
   /**
@@ -122,4 +201,3 @@ class MediaController extends BaseController {
     return $this->buildMedias($result);
   }
 }
-
