@@ -74,7 +74,10 @@ class PostsController extends BaseController {
   public function update() {}
 
   /**
-   * Delete a Taxonomy
+   * Delete a Post based on id
+   *
+   * @param $id
+   *   the id of the post to delete
    */
   public function delete($id) {
     try {
