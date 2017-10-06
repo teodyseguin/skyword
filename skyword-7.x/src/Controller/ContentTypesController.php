@@ -183,23 +183,25 @@ class ContentTypesController extends BaseController {
   private function getTypes($type = NULL) {
     $types = parent::getEnabledContentTypes();
 
-    $query = db_select('node_type', 'nt');
-    $query->condition('nt.type', $types, 'IN');
+    $this->query = db_select('node_type', 'nt');
+    $this->query->condition('nt.type', $types, 'IN');
 
     if ($type != NULL) {
-      $query->condition('nt.type', $type);
-      $query->fields('nt', ['type', 'name', 'description']);
+      $this->query->condition('nt.type', $type);
+      $this->query->fields('nt', ['type', 'name', 'description']); 
+      $this->pager();
 
-      $obj = $query->execute()->fetchObject();
+      $obj = $this->query->execute()->fetchObject();
 
       $this->buildFieldsData($type, $obj);
 
       return $obj;
     }
 
-    $query->fields('nt', ['type', 'name', 'description']);
+    $this->query->fields('nt', ['type', 'name', 'description']);
+    $this->pager();
 
-    return $query->execute()->fetchAll();
+    return $this->query->execute()->fetchAll();
   }
 
 }

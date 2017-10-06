@@ -114,19 +114,20 @@ class AuthorController extends BaseController {
    * Load the user fields
    */
   private function loadUsers($id = NULL) {
-    $query = db_select('users_roles', 'ur');
+    $this->query = db_select('users_roles', 'ur');
 
     if ($id != NULL) {
-      $query->condition('ur.uid', $id);
-      $query->condition('ur.rid', $this->role['role']);
+      $this->query->condition('ur.uid', $id);
+      $this->query->condition('ur.rid', $this->role['role']);
     }
     else {
-      $query->condition('ur.rid', $this->role['role']);
+      $this->query->condition('ur.rid', $this->role['role']);
     }
 
-    $query->fields('ur', ['uid' => 'uid']);
+    $this->query->fields('ur', ['uid' => 'uid']);
+    $this->pager();
 
-    $results = $query->execute();
+    $results = $this->query->execute();
 
     if (!$results->rowCount()) {
       return FALSE;
