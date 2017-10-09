@@ -24,7 +24,7 @@ class BaseController {
 
     $last =  $total % $per_page;
 
-    $url = (isset($_SERVER['HTTPS']) ? "https:" : "http:") '//' . $_SERVER["HTTP_HOST"].strtok($_SERVER["REQUEST_URI"],'?');
+    $url = (isset($_SERVER['HTTPS']) ? "https:" : "http:") . '//' . $_SERVER["HTTP_HOST"].strtok($_SERVER["REQUEST_URI"],'?');
 
     drupal_add_http_header('X-Total-Count', $total, TRUE);
 
