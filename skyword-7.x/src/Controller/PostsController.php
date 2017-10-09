@@ -112,6 +112,7 @@ class PostsController extends BaseController {
 
     $this->query->fields('n', ['nid']);
     $this->pager();
+
     $result = $this->query->execute();
 
     return (object)[
@@ -211,7 +212,7 @@ class PostsController extends BaseController {
     $posts->elements = [];
 
     $posts->total = $resultTypes->count;
-    $posts->page = $_GET['page'];
+    $posts->page = $this->page ? $this->page : 1;
 
     foreach ($resultTypes->result as $row) {
       $node = node_load($row->nid);

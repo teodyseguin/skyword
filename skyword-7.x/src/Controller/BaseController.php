@@ -43,9 +43,8 @@ class BaseController {
       $this->query->range(0, $per_page);
     }
     else {
-      $this->query->range($first_record, $per_page);
+      $this->query->range($first_record, $next);
     }
-
   }
 
   /**
