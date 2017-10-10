@@ -21,5 +21,7 @@ function _skyword_media_retrieve($id, $fields) {
 function _skyword_media_create($file) {
   require drupal_get_path('module', 'skyword') . '/src/Controller/MediaController.php';
   $controller = new MediaController();
+
   return $controller->create($file);
 }
+
