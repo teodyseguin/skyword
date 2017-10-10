@@ -200,9 +200,9 @@ class ContentTypesController extends BaseController {
     $this->pager();
 
     $obj = new stdClass();
+    $obj->elements = $this->query->execute()->fetchAll();
     $obj->total = $this->query->execute()->rowCount();
     $obj->page = $this->page ? $this->page : 1;
-    $obj->elements = $this->query->execute()->fetchAll();
 
     return $obj;
   }
