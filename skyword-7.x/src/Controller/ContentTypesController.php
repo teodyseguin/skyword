@@ -51,9 +51,12 @@ class ContentTypesController extends BaseController {
       // use get_t() to get the name of our localization function for translation
       // during install, when t() is not available.
       $t = get_t();
+
+      $this->removeContentTypeNameSpaces($data);
+
       // Define the node type.
       $skyword_content_type = array(
-        'type' => $data['id'],
+        'type' => $data['name'],
         'name' => $data['name'],
         'base' => 'node_content',
         'description' => $data['description'],
@@ -72,50 +75,16 @@ class ContentTypesController extends BaseController {
           if ($field['id'] !== 'title' && !field_info_field($field['id'])) {
             switch($field['datatype']) {
               case 'text':
-                // Create the field base.
-                $field = array(
-                  'field_name' => $field['id'],
-                  'type' => 'text',
-                );
-                field_create_field($field);
+                $this->createTextField($field, $data);
+                break;
 
-                // Create the field instance on the bundle.
-                $instance = array(
-                  'field_name' => $field['id'],
-                  'entity_type' => 'node',
-                  'label' => 'My Field Name',
-                  'bundle' => $data['id'],
-                  // If you don't set the "required" property then the field wont be required by default.
-                  'required' => $field['required'],
-                  'widget' => array(
-                    'type' => 'textfield',
-                  ),
-                );
-                field_create_instance($instance);
-              break;
               case 'richtext':
-                // Create the field base.
-                $field = array(
-                  'field_name' => $field['id'],
-                  'type' => 'text_long',
-                );
-                field_create_field($field);
+                $this->createTextAreaField($field, $data, $content_type);
+                break;
 
-                // Create the field instance on the bundle.
-                $instance = array(
-                  'field_name' => $field['id'],
-                  'entity_type' => 'node',
-                  'label' => 'My Field Name',
-                  'bundle' => $data['id'],
-                  // If you don't set the "required" property then the field wont be required by default.
-                  'required' => $field['required'],
-                  'widget' => array(
-                    'type' => 'text_textarea',
-                  ),
-                  'format' => 'filter_html',
-                );
-                field_create_instance($instance);
-              break;
+              case 'image':
+                $this->createImageField($field, $data);
+                break;
             }
           }
         }
@@ -124,15 +93,20 @@ class ContentTypesController extends BaseController {
       return [];
     }
     catch (Exception $e) {
+      $errorMessage = $e->getMessage();
+
+      if ($errorMessage) {
+        return services_error(t($errorMessage), 500);
+      }
+
       return services_error(t('Cannot create a content type.'), 500);
     }
   }
 
   /**
-  * Validation checks to prevent us from breaking Drupal!
-  */
+   * Validation checks to prevent us from breaking Drupal!
+   */
   private function valid($data) {
-
     return true;
   }
 
@@ -164,7 +138,7 @@ class ContentTypesController extends BaseController {
       $fieldData->name = $fieldLabel;
       $fieldData->help = $fieldDescription;
       $fieldData->required = $fieldRequired;
-      $fieldData->dataType = $fieldModule;
+      $fieldData->datatype = $fieldModule;
       $fieldData->{'ui-type'} = $fieldWidgetType;
 
       $element->fields[] = $fieldData;
@@ -205,6 +179,135 @@ class ContentTypesController extends BaseController {
     $obj->page = $this->page ? $this->page : 1;
 
     return $obj;
+  }
+
+  private function removeContentTypeNameSpaces(&$data) {
+    if (empty($data['name'])) return;
+    $data['name'] = strtolower(str_replace(' ', '_', $data['name']));
+  }
+
+  private function removeFieldNameSpaces(&$field) {
+    if (empty($field['name'])) return;
+    return strtolower(str_replace(' ', '_', $field['name']));
+  }
+
+  private function createTextField($field, $data) {
+    $fieldMachineName = $this->removeFieldNameSpaces($field);
+
+    try {
+      // Create the field base.
+      $field = array(
+        'field_name' => $fieldMachineName,
+        'type' => 'text',
+        'label' => $field['name'],
+      );
+
+      field_create_field($field);
+
+      // Create the field instance on the bundle.
+      $instance = array(
+        'field_name' => $fieldMachineName,
+        'entity_type' => 'node',
+        'label' => $field['name'],
+        'bundle' => $data['name'],
+        // If you don't set the "required" property then the field wont be required by default.
+        'required' => $field['required'],
+        'widget' => array(
+          'type' => 'textfield',
+        ),
+      );
+
+      field_create_instance($instance);
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
+  }
+
+  private function createTextAreaField($field, $data, $contentType = NULL) {
+    $fieldMachineName = $this->removeFieldNameSpaces($field);
+
+    try {
+      if ($field['name'] == 'Body' && $contentType != NULL) {
+        node_add_body_field($contentType);
+      }
+      else {
+        // Create the field base.
+        $field = array(
+          'field_name' => $fieldMachineName,
+          'type' => 'text_long',
+        );
+
+        field_create_field($field);
+
+        // Create the field instance on the bundle.
+        $instance = array(
+          'description' => $field['help'],
+          'display' => array(
+            'default' => array(
+              'label' => 'above',
+              'module' => 'text',
+              'settings' => array(),
+              'type' => 'text_default',
+            ),
+          ),
+          'field_name' => $fieldMachineName,
+          'entity_type' => 'node',
+          'label' => $field['name'],
+          'bundle' => $data['name'],
+          // If you don't set the "required" property then the field wont be required by default.
+          'required' => $field['required'],
+          'widget' => array(
+            'type' => 'text_textarea',
+          ),
+          'format' => 'filter_html',
+        );
+
+        field_create_instance($instance);
+      }
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
+  }
+
+  private function createImageField($field, $data) {
+    try {
+      $fieldMachineName = $this->removeFieldNameSpaces($field);
+
+      // Create the field base.
+      $field = array(
+        'field_name' => $fieldMachineName,
+        'type' => 'image',
+      );
+
+      field_create_field($field);
+
+      // Create the field instance on the bundle.
+      $instance = array(
+        'description' => $field['help'],
+        'field_name' => $fieldMachineName,
+        'entity_type' => 'node',
+        'label' => $field['name'],
+        'bundle' => $data['name'],
+        // If you don't set the "required" property then the field wont be required by default.
+        'required' => $field['required'],
+        'widget' => array(
+          'active' => 1,
+          'module' => 'image',
+          'settings' => array(
+            'preview_image_style' => 'thumbnail',
+            'progress_indicator' => 'throbber',
+          ),
+          'type' => 'image_image',
+        ),
+      );
+
+      field_create_instance($instance);
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
   }
 }
 
