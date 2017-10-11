@@ -266,8 +266,12 @@ class ContentTypesController extends BaseController {
         // Create the field base.
         $baseField = array(
           'field_name' => $fieldMachineName,
+          'module' => 'text',
+          'translatable' => 0,
           'type' => 'text_long',
         );
+
+        if ($field['summary'] == 'true') $baseField['type'] = 'text_with_summary';
 
         field_create_field($baseField);
 
