@@ -85,6 +85,10 @@ class ContentTypesController extends BaseController {
               case 'image':
                 $this->createImageField($field, $data);
                 break;
+
+              case 'boolean':
+                $this->createBooleanField($field, $data);
+                break;
             }
           }
         }
@@ -300,6 +304,48 @@ class ContentTypesController extends BaseController {
             'progress_indicator' => 'throbber',
           ),
           'type' => 'image_image',
+        ),
+      );
+
+      field_create_instance($instance);
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
+  }
+
+  private function createBooleanField($field, $data) {
+    try {
+      $fieldMachineName = $this->removeFieldNameSpaces($field);
+
+      // Create the field base.
+      $field = array(
+        'field_name' => $fieldMachineName,
+        'module' => 'list',
+        'settings' => array(
+          'allowed_values' => array(0 => 'false', 1 => 'true'),
+          'allowed_values_function' => '',
+        ),
+        'translatable' => 0,
+        'type' => 'list_boolean',
+      );
+
+      field_create_field($field);
+
+      // Create the field instance on the bundle.
+      $instance = array(
+        'bundle' => $data['name'],
+        'default_value' => NULL,
+        'description' => $field['help'],
+        'field_name' => $fieldMachineName,
+        'entity_type' => 'node',
+        'label' => $field['name'],
+        // If you don't set the "required" property then the field wont be required by default.
+        'required' => $field['required'],
+        'widget' => array(
+          'active' => 1,
+          'module' => 'options',
+          'type' => 'options_buttons',
         ),
       );
 
