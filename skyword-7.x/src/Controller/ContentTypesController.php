@@ -25,6 +25,12 @@ class ContentTypesController extends BaseController {
       return $this->getTypes();
     }
     catch (Exception $e) {
+      $errorMessage = $e->getMessage();
+
+      if ($errorMessage) {
+        return services_error(t($errorMessage), 500);
+      }
+
       return services_error(t('Cannot query content types table.'), 500);
     }
   }
@@ -42,6 +48,12 @@ class ContentTypesController extends BaseController {
       return $this->getTypes($type);
     }
     catch (Exception $e) {
+      $errorMessage = $e->getMessage();
+
+      if ($errorMessage) {
+        return services_error(t($errorMessage), 500);
+      } 
+
       return services_error(t('Cannot query content types table.'), 500);
     }
   }
@@ -74,11 +86,11 @@ class ContentTypesController extends BaseController {
         foreach($data['fields'] as $field) {
           if ($field['id'] !== 'title' && !field_info_field($field['id'])) {
             switch($field['datatype']) {
-              case 'text':
+              case 'text field':
                 $this->createTextField($field, $data);
                 break;
 
-              case 'richtext':
+              case 'text area':
                 $this->createTextAreaField($field, $data, $content_type);
                 break;
 
@@ -110,7 +122,7 @@ class ContentTypesController extends BaseController {
         }
       }
 
-      return [];
+      return $this->getTypes($data['name']);
     }
     catch (Exception $e) {
       $errorMessage = $e->getMessage();
