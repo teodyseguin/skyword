@@ -89,6 +89,14 @@ class ContentTypesController extends BaseController {
               case 'boolean':
                 $this->createBooleanField($field, $data);
                 break;
+
+              case 'single select':
+                $this->createSingleSelectField($field, $data);
+                break;
+
+              case 'multi select':
+                $this->createMultiSelectField($field, $data);
+                break;
             }
           }
         }
@@ -200,13 +208,12 @@ class ContentTypesController extends BaseController {
 
     try {
       // Create the field base.
-      $field = array(
+      $baseField = array(
         'field_name' => $fieldMachineName,
         'type' => 'text',
-        'label' => $field['name'],
       );
 
-      field_create_field($field);
+      field_create_field($baseField);
 
       // Create the field instance on the bundle.
       $instance = array(
@@ -237,12 +244,12 @@ class ContentTypesController extends BaseController {
       }
       else {
         // Create the field base.
-        $field = array(
+        $baseField = array(
           'field_name' => $fieldMachineName,
           'type' => 'text_long',
         );
 
-        field_create_field($field);
+        field_create_field($baseField);
 
         // Create the field instance on the bundle.
         $instance = array(
@@ -280,12 +287,12 @@ class ContentTypesController extends BaseController {
       $fieldMachineName = $this->removeFieldNameSpaces($field);
 
       // Create the field base.
-      $field = array(
+      $baseField = array(
         'field_name' => $fieldMachineName,
         'type' => 'image',
       );
 
-      field_create_field($field);
+      field_create_field($baseField);
 
       // Create the field instance on the bundle.
       $instance = array(
@@ -319,7 +326,7 @@ class ContentTypesController extends BaseController {
       $fieldMachineName = $this->removeFieldNameSpaces($field);
 
       // Create the field base.
-      $field = array(
+      $baseField = array(
         'field_name' => $fieldMachineName,
         'module' => 'list',
         'settings' => array(
@@ -330,7 +337,7 @@ class ContentTypesController extends BaseController {
         'type' => 'list_boolean',
       );
 
-      field_create_field($field);
+      field_create_field($baseField);
 
       // Create the field instance on the bundle.
       $instance = array(
@@ -346,6 +353,100 @@ class ContentTypesController extends BaseController {
           'active' => 1,
           'module' => 'options',
           'type' => 'options_buttons',
+        ),
+      );
+
+      field_create_instance($instance);
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
+  }
+
+  private function createSingleSelectField($field, $data) {
+    try {
+      $fieldMachineName = $this->removeFieldNameSpaces($field);
+
+      // Create the field base.
+      $baseField = array(
+        'cardinality' => 1,
+        'field_name' => $fieldMachineName,
+        'indexes' => array(
+          'value' => array(0 => 'value'),
+        ),
+        'module' => 'list',
+        'settings' => array(
+          'allowed_values' => array(),
+          'allowed_values_function' => '',
+        ),
+        'translatable' => 0,
+        'type' => 'list_text',
+      );
+
+      field_create_field($baseField);
+
+      // Create the field instance on the bundle.
+      $instance = array(
+        'bundle' => $data['name'],
+        'default_value' => NULL,
+        'description' => $field['help'],
+        'field_name' => $fieldMachineName,
+        'entity_type' => 'node',
+        'label' => $field['name'],
+        // If you don't set the "required" property then the field wont be required by default.
+        'required' => $field['required'],
+        'widget' => array(
+          'active' => 1,
+          'module' => 'options',
+          'settings' => array(),
+          'type' => 'options_select',
+        ),
+      );
+
+      field_create_instance($instance);
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
+  }
+
+  private function createMultiSelectField($field, $data) {
+    try {
+      $fieldMachineName = $this->removeFieldNameSpaces($field);
+
+      // Create the field base.
+      $baseField = array(
+        'cardinality' => -1,
+        'field_name' => $fieldMachineName,
+        'indexes' => array(
+          'value' => array(0 => 'value'),
+        ),
+        'module' => 'list',
+        'settings' => array(
+          'allowed_values' => array(),
+          'allowed_values_function' => '',
+        ),
+        'translatable' => 0,
+        'type' => 'list_text',
+      );
+
+      field_create_field($baseField);
+
+      // Create the field instance on the bundle.
+      $instance = array(
+        'bundle' => $data['name'],
+        'default_value' => NULL,
+        'description' => $field['help'],
+        'field_name' => $fieldMachineName,
+        'entity_type' => 'node',
+        'label' => $field['name'],
+        // If you don't set the "required" property then the field wont be required by default.
+        'required' => $field['required'],
+        'widget' => array(
+          'active' => 1,
+          'module' => 'options',
+          'settings' => array(),
+          'type' => 'options_select',
         ),
       );
 
