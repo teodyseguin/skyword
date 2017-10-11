@@ -48,11 +48,6 @@ class ContentTypesController extends BaseController {
 
   public function create($data) {
     try {
-      
-        if (!$this->valid($data)) {
-
-        }
-
       // use get_t() to get the name of our localization function for translation
       // during install, when t() is not available.
       $t = get_t();
@@ -205,9 +200,9 @@ class ContentTypesController extends BaseController {
     $this->pager();
 
     $obj = new stdClass();
+    $obj->elements = $this->query->execute()->fetchAll();
     $obj->total = $this->query->execute()->rowCount();
     $obj->page = $this->page ? $this->page : 1;
-    $obj->elements = $this->query->execute()->fetchAll();
 
     return $obj;
   }
