@@ -72,4 +72,3 @@ Import that json file into Postman. Currently, there are 7 postman test you can 
 7. Create a Term from a Taxonomy
 
 PS. You may need to update the domain name `skyword.local` with your own domain name.
-

@@ -48,8 +48,7 @@ class ContentTypesController extends BaseController {
 
   public function create($data) {
     try {
-      watchdog('skyword', '<pre>'. print_r($data, true) . '</pre>');
-
+      
         if (!$this->valid($data)) {
 
         }
@@ -191,7 +190,7 @@ class ContentTypesController extends BaseController {
 
     if ($type != NULL) {
       $this->query->condition('nt.type', $type);
-      $this->query->fields('nt', ['type', 'name', 'description']); 
+      $this->query->fields('nt', ['type', 'name', 'description']);
       $this->pager();
 
       $obj = $this->query->execute()->fetchObject();
@@ -213,4 +212,3 @@ class ContentTypesController extends BaseController {
     return $obj;
   }
 }
-

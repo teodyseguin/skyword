@@ -21,4 +21,3 @@ function _skyword_taxonomies_create($data, $id, $terms) {
   $controller = new TaxonomyController();
   return $controller->create($data, $id, $terms);
 }
-

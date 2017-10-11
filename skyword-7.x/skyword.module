@@ -2,8 +2,6 @@
 
 define('SKYWORD_VERSION', 1); // Define the version of this api.
 
-function skyword_init() {}
-
 /**
  * Implements hook_permission().
  */
@@ -102,6 +100,14 @@ function skyword_menu() {
     'type' => MENU_LOCAL_TASK
   );
 
+  //  Alias of /oauth2/token
+  $items['skyword/v1/oauth2/token'] = array(
+    'page callback' => 'oauth2_server_token_page',
+    'access arguments' => array('use oauth2 server'),
+    'type' => MENU_CALLBACK,
+    'file path' => drupal_get_path('module', 'oauth2_server'),
+    'file' => 'oauth2_server.pages.inc',
+  );
   return $items;
 }
 
@@ -110,7 +116,7 @@ function skyword_menu() {
  */
 function _skyword_access($op, $args) {
   global $user;
-  return user_access($op, $user);
+  return oauth2_server_check_access('skyword');
 }
 
 /**
