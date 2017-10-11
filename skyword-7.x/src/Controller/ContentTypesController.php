@@ -97,6 +97,14 @@ class ContentTypesController extends BaseController {
               case 'multi select':
                 $this->createMultiSelectField($field, $data);
                 break;
+
+              case 'date':
+                $this->createDateField($field, $data);
+                break;
+
+              case 'datetime':
+                $this->createDatetimeField($field, $data);
+                break;
             }
           }
         }
@@ -447,6 +455,145 @@ class ContentTypesController extends BaseController {
           'module' => 'options',
           'settings' => array(),
           'type' => 'options_select',
+        ),
+      );
+
+      field_create_instance($instance);
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
+  }
+
+  private function createDateField($field, $data) {
+    if (!module_exists('date')) throw new Exception('Date module is not enabled');
+
+    try {
+      $fieldMachineName = $this->removeFieldNameSpaces($field);
+
+      // Create the field base.
+      $baseField = array(
+        'cardinality' => 1,
+        'field_name' => $fieldMachineName,
+        'indexes' => array(),
+        'module' => 'date',
+        'settings' => array(
+          'cache_count' => 4,
+          'cache_enabled' => 0,
+          'granularity' => array(
+            'day' => 'day',
+            'hour' => 0,
+            'minute' => 0,
+            'month' => 'month',
+            'second' => 0,
+            'year' => 'year',
+          ),
+          'timezone_db' => '',
+          'todate' => '',
+          'tz_handling' => 'none',
+        ),
+        'translatable' => 0,
+        'type' => 'datetime',
+      );
+
+      field_create_field($baseField);
+
+      // Create the field instance on the bundle.
+      $instance = array(
+        'bundle' => $data['name'],
+        'default_value' => NULL,
+        'description' => $field['help'],
+        'field_name' => $fieldMachineName,
+        'entity_type' => 'node',
+        'label' => $field['name'],
+        // If you don't set the "required" property then the field wont be required by default.
+        'required' => $field['required'],
+        'widget' => array(
+          'active' => 1,
+          'module' => 'date',
+          'settings' => array(
+            'increment' => 15,
+            'input_format' => 'm/d/Y - H:i:s',
+            'input_format_custom' => '',
+            'label_position' => 'above',
+            'no_fieldset' => 0,
+            'text_parts' => array(),
+            'year_range' => '-3:+3',
+          ),
+          'type' => 'date_select',
+        ),
+      );
+
+      field_create_instance($instance);
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
+  }
+
+  private function createDatetimeField($field, $data) {
+    if (!module_exists('date')) throw new Exception('Date module is not enabled');
+
+    try {
+      $fieldMachineName = $this->removeFieldNameSpaces($field);
+
+      // Create the field base.
+      $baseField = array(
+        'cardinality' => 1,
+        'field_name' => $fieldMachineName,
+        'indexes' => array(),
+        'module' => 'date',
+        'settings' => array(
+          'cache_count' => 4,
+          'cache_enabled' => 0,
+          'granularity' => array(
+            'day' => 'day',
+            'hour' => 'hour',
+            'minute' => 'minute',
+            'month' => 'month',
+            'second' => 0,
+            'year' => 'year',
+          ),
+          'timezone_db' => 'UTC',
+          'todate' => '',
+          'tz_handling' => 'site',
+        ),
+        'translatable' => 0,
+        'type' => 'datetime',
+      );
+
+      field_create_field($baseField);
+
+      // Create the field instance on the bundle.
+      $instance = array(
+        'bundle' => $data['name'],
+        'default_value' => NULL,
+        'description' => $field['help'],
+        'field_name' => $fieldMachineName,
+        'entity_type' => 'node',
+        'label' => $field['name'],
+        // If you don't set the "required" property then the field wont be required by default.
+        'required' => $field['required'],
+        'settings' => array(
+          'default_value' => 'now',
+          'default_value2' => 'same',
+          'default_value_code' => '',
+          'default_value_code2' => '',
+          'user_register_form' => FALSE,
+        ),
+        'widget' => array(
+          'active' => 1,
+          'module' => 'date',
+          'settings' => array(
+            'increment' => 15,
+            'input_format' => 'm/d/Y - H:i:s',
+            'input_format_custom' => '',
+            'label_position' => 'above',
+            'no_fieldset' => 0,
+            'text_parts' => array(),
+            'year_range' => '-3:+3',
+          ),
+          'type' => 'date_select',
         ),
       );
 
