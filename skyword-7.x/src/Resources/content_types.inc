@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * content_types.inc

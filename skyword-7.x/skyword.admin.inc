@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * skyword.admin.inc
+ */
+
+/**
  * Configure system for Skyword managed vocabularies.
  */
 function skyword_vocabulary_manage($form, &$form_state, $vocabulary = 'tags') {
@@ -46,7 +51,7 @@ function skyword_vocabulary_manage($form, &$form_state, $vocabulary = 'tags') {
     )
   );
 
-  foreach($fields as $id => $field) {
+  foreach ($fields as $id => $field) {
     $status = array(
       '#type' => 'checkbox',
       '#default_value' => $data['data'][$id]['status']
@@ -305,10 +310,10 @@ function skyword_user_expected_fields() {
  * Implements hook_validate().
  */
 function skyword_user_manage_validate($form, &$form_state) {
-  foreach ($form_state['values']['data']['fields'] as $machineName => $field) {
-    $field_info = field_info_field($machineName);
+  foreach ($form_state['values']['data']['fields'] as $machine_name => $field) {
+    $field_info = field_info_field($machine_name);
 
-    if ($machineName == 'mail' && $field['mapto'] != 'mail') {
+    if ($machine_name == 'mail' && $field['mapto'] != 'mail') {
       form_set_error('error', 'Field E-mail should map to E-mail.');
     }
 

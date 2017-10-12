@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * version.inc
+ */
+
+/**
  * - Returns the site version number to the Skyword Service.
  */
 function _skyword_version_index() {

@@ -8,60 +8,60 @@ define('SKYWORD_VERSION', 1); // Define the version of this api.
 function skyword_permission() {
   return array(
     'administer skyword' => array(
-      'title' => t('Administer Skyword'),
-      'description' => t('Configure and setup Skyword API')
+      'title' => 'Administer Skyword',
+      'description' => 'Configure and setup Skyword API'
     ),
     'token retrieve' => array(
-      'title' => t('Allow to retrieve authentication token'),
-      'description' => t('Return an authentication token'),
+      'title' => 'Allow to retrieve authentication token',
+      'description' => 'Return an authentication token',
     ),
     'version retrieve' => array(
-      'title' => t('Allow to retrieve the cms version'),
-      'description' => t('Return the version of cms'),
+      'title' => 'Allow to retrieve the cms version',
+      'description' => 'Return the version of cms',
     ),
     'taxonomies retrieve' => array(
-      'title' => t('Allow to retrieve a list taxonomies or specific taxonomy'),
-      'description' => t('Return a list or specific taxonomy(s)'),
+      'title' => 'Allow to retrieve a list taxonomies or specific taxonomy',
+      'description' => 'Return a list or specific taxonomy(s)',
     ),
     'taxonomy create' => array(
-      'title' => t('Allow to create a taxonomy'),
-      'description' => t('Create a taxonomy'),
+      'title' => 'Allow to create a taxonomy',
+      'description' => 'Create a taxonomy',
     ),
     'authors retrieve' => array(
-      'title' => t('Allow to retrieve a list of authors or specific author'),
-      'description' => t('Return a list or specific author(s)'),
+      'title' => 'Allow to retrieve a list of authors or specific author',
+      'description' => 'Return a list or specific author(s)',
     ),
     'author create' => array(
-      'title' => t('Allow to create an Author'),
-      'description' => t('Create an author'),
+      'title' => 'Allow to create an Author',
+      'description' => 'Create an author',
     ),
     'posts retrieve' => array(
-      'title' => t('Allow to retrieve a list of posts or specific post'),
-      'description' => t('Return a list or specific post(s)'),
+      'title' => 'Allow to retrieve a list of posts or specific post',
+      'description' => 'Return a list or specific post(s)',
     ),
     'post create' => array(
-      'title' => t('Allow to create a post with specified type'),
-      'description' => t('Create a post'),
+      'title' => 'Allow to create a post with specified type',
+      'description' => 'Create a post',
     ),
     'post delete' => array(
-      'title' => t('Allow to delete a post from the API'),
-      'description' => t('Delete a post'),
+      'title' => 'Allow to delete a post from the API',
+      'description' => 'Delete a post',
     ),
     'media retrieve' => array(
-      'title' => t('Allow to retrieve a list of media or specific media'),
-      'description' => t('Return a list or specific media(s)'),
+      'title' => 'Allow to retrieve a list of media or specific media',
+      'description' => 'Return a list or specific media(s)',
     ),
     'media create' => array(
-      'title' => t('Allow to create a media'),
-      'description' => t('Create a media'),
+      'title' => 'Allow to create a media',
+      'description' => 'Create a media',
     ),
     'content types retrieve' => array(
-      'title' => t('Allow to retrieve a list or specific content type'),
-      'description' => t('Return a list or specific content type'),
+      'title' => 'Allow to retrieve a list or specific content type',
+      'description' => 'Return a list or specific content type',
     ),
     'content types create' => array(
-      'title' => t('Allow to create a content type'),
-      'description' => t('Create a content type'),
+      'title' => 'Allow to create a content type',
+      'description' => 'Create a content type',
     ),
   );
 }
@@ -73,30 +73,30 @@ function skyword_menu() {
   $items['admin/structure/types/manage/%/skyword'] = array(
     'page callback' => 'drupal_get_form',
     'page arguments' => array('skyword_content_manage', 4),
-    'description' => t('Manage settings for Skyword managed content.'),
+    'description' => 'Manage settings for Skyword managed content.',
     'access arguments' => array('administer skyword'),
     'file' => 'skyword.admin.inc',
-    'title' => t('Manage Skyword'),
+    'title' => 'Manage Skyword',
     'type' => MENU_LOCAL_TASK
   );
 
   $items['admin/structure/taxonomy/%/skyword'] = array(
     'page callback' => 'drupal_get_form',
     'page arguments' => array('skyword_vocabulary_manage', 3),
-    'description' => t('Manage settings for Skyword managed content.'),
+    'description' => 'Manage settings for Skyword managed content.',
     'access arguments' => array('administer skyword'),
     'file' => 'skyword.admin.inc',
-    'title' => t('Manage Skyword'),
+    'title' => 'Manage Skyword',
     'type' => MENU_LOCAL_TASK
   );
 
   $items['admin/config/people/accounts/skyword'] = array(
     'page callback' => 'drupal_get_form',
     'page arguments' => array('skyword_user_manage', 3),
-    'description' => t('Manage settings for Skyword managed users.'),
+    'description' => 'Manage settings for Skyword managed users.',
     'access arguments' => array('administer skyword'),
     'file' => 'skyword.admin.inc',
-    'title' => t('Manage Skyword'),
+    'title' => 'Manage Skyword',
     'type' => MENU_LOCAL_TASK
   );
 
@@ -108,6 +108,7 @@ function skyword_menu() {
     'file path' => drupal_get_path('module', 'oauth2_server'),
     'file' => 'oauth2_server.pages.inc',
   );
+
   return $items;
 }
 
@@ -701,7 +702,8 @@ function _skyword_available_content_types() {
   $options = array(
     -1 => t('Select a content type')
   );
-  foreach($bundles as $id => $bundle) {
+
+  foreach ($bundles as $id => $bundle) {
     $options[$id] = $bundle->name;
   }
 
@@ -719,7 +721,7 @@ function _skyword_content_type_fields($entity_type = 'node', $bundle = 'author')
   $fields = field_info_instances($entity_type, $bundle);
 
   if ($fields) {
-    foreach($fields as $id => $field) {
+    foreach ($fields as $id => $field) {
       $info = field_info_field($id);
       $field_options[$id] = $field['label'];
     }
