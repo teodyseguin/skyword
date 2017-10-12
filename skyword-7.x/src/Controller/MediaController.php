@@ -132,6 +132,8 @@ class MediaController extends BaseController {
   public function delete() {}
 
   private function addFileMetadata($file, $id) {
+    if (!module_exists('file_entity')) throw new Exception('File Entity module is not enabled');
+
     try {
       $loadedFile = file_load($id);
       $loadedFile->title = $file['title'];
