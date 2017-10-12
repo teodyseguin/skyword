@@ -57,9 +57,25 @@ class MediaController extends BaseController {
   /**
   * Used to create a file.
   */
-  public function create($file) {
+  public function create($file, $id = NULL, $metadata = NULL) {
+    if ($id && $metadata == 'metadata') {
+      try {
+        return $this->addFileMetadata($file, $id);
+      }
+      catch (Exception $e) {
+        $errorMessage = $e->getMessage();
+
+        if ($errorMessage) {
+          return services_error(t($errorMessage), 500);
+        }
+
+        return services_error(t('Cannot add metadata to the file with id ' . $id), 500);
+      }
+    }
+
     try {
       $headers = getallheaders();
+
       preg_match('/filename\=(\".*\")/', $headers['Content-Disposition'], $matches);
 
       // Adds backwards compatability with regression fixed in #1083242
@@ -76,9 +92,10 @@ class MediaController extends BaseController {
       // Sanitize the file extension, name, path and scheme provided by the user.
       $destination = empty($file['filepath'])
         ? file_default_scheme() . '://' . $file['filename']
-        : $this->file_check_destination_uri($file['filepath']);
+        : $this->fileCheckDestinationUri($file['filepath']);
 
       $dir = drupal_dirname($destination);
+
       // Build the destination folder tree if it doesn't already exists.
       if (!file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
         return services_error(t("Could not create destination directory for file."), 500);
@@ -114,7 +131,25 @@ class MediaController extends BaseController {
 
   public function delete() {}
 
+  private function addFileMetadata($file, $id) {
+    if (!module_exists('file_entity')) throw new Exception('File Entity module is not enabled');
 
+    try {
+      $loadedFile = file_load($id);
+      $loadedFile->title = $file['title'];
+      $loadedFile->alt = $file['alt'];
+
+      $loadedFile->field_file_image_title_text[LANGUAGE_NONE][0]['value'] = $file['title'];
+      $loadedFile->field_file_image_alt_text[LANGUAGE_NONE][0]['value'] = $file['alt'];
+
+      file_save($loadedFile);
+
+      return $loadedFile;
+    }
+    catch (Exception $e) {
+      return $e->getMessage();
+    }
+  }
   /**
   * Used for helping with the posting data.
   */
@@ -128,7 +163,7 @@ class MediaController extends BaseController {
   /**
   * Check the file destination.
   */
-  private function file_check_destination_uri($uri) {
+  private function fileCheckDestinationUri($uri) {
     $scheme = strstr($uri, '://', TRUE);
     $path = $scheme ? substr($uri, strlen("$scheme://")) : $uri;
 

@@ -19,10 +19,10 @@ function _skyword_media_retrieve($id, $fields) {
   return $controller->retrieve($id, $fields);
 }
 
-function _skyword_media_create($file) {
+function _skyword_media_create($file, $id, $metadata) {
   require drupal_get_path('module', 'skyword') . '/src/Controller/MediaController.php';
   $controller = new MediaController();
 
-  return $controller->create($file);
+  return $controller->create($file, $id, $metadata);
 }
 

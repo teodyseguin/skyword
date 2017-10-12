@@ -597,10 +597,24 @@ function skyword_services_resources() {
           array(
             'name' => 'file',
             'type' => 'array',
-            'description' => t('An array representing a file'),
-            'source' => 'file',
+            'description' => 'An array representing a file',
+            'source' => 'data',
             'optional' => FALSE,
-          )
+          ),
+          array(
+            'name' => 'id',
+            'type' => 'int',
+            'description' => 'The identifier of the file',
+            'source' => array('path' => '0'),
+            'optional' => TRUE,
+          ),
+          array(
+            'name' => 'metadata',
+            'type' => 'string',
+            'description' => 'The word metadata signifies that we are addin a metadata details to a file',
+            'source' => array('path' => '1'),
+            'optional' => TRUE,
+          ),
         ),
       ),
     ),
