@@ -58,6 +58,12 @@ class ContentTypesController extends BaseController {
     }
   }
 
+  /**
+   * Create a content type
+   *
+   * @param $data
+   *   the whole object from the post payload
+   */
   public function create($data) {
     try {
       // use get_t() to get the name of our localization function for translation
@@ -213,16 +219,36 @@ class ContentTypesController extends BaseController {
     return $obj;
   }
 
+  /**
+   * Helper to remove spaces from the content type name
+   *
+   * @param $data
+   *   the whole object from the post payload
+   */
   private function removeContentTypeNameSpaces(&$data) {
     if (empty($data['name'])) return;
     $data['name'] = strtolower(str_replace(' ', '_', $data['name']));
   }
 
+  /**
+   * Helper to remove spaces from a field's name
+   *
+   * @param $field
+   *   the field definition object from the post payload
+   */
   private function removeFieldNameSpaces(&$field) {
     if (empty($field['name'])) return;
     return strtolower(str_replace(' ', '_', $field['name']));
   }
 
+  /**
+   * Create a Text field
+   *
+   * @param $field
+   *   the field definition object from the post payload
+   * @param $data
+   *   the whole object from the post payload
+   */
   private function createTextField($field, $data) {
     $fieldMachineName = $this->removeFieldNameSpaces($field);
 
@@ -255,6 +281,17 @@ class ContentTypesController extends BaseController {
     }
   }
 
+  /**
+   * Create a Textrea field
+   *
+   * @param $field
+   *   the field definition object from the post payload
+   * @param $data
+   *   the whole object from the post payload
+   * @param $contentType
+   *   default to NULL
+   *   but it is used to reference newly created content type object
+   */
   private function createTextAreaField($field, $data, $contentType = NULL) {
     $fieldMachineName = $this->removeFieldNameSpaces($field);
 
@@ -306,6 +343,14 @@ class ContentTypesController extends BaseController {
     }
   }
 
+  /**
+   * Create an Image field
+   *
+   * @param $field
+   *   the field definition object from the post payload
+   * @param $data
+   *   the whole object from the post payload
+   */
   private function createImageField($field, $data) {
     try {
       $fieldMachineName = $this->removeFieldNameSpaces($field);
@@ -345,6 +390,14 @@ class ContentTypesController extends BaseController {
     }
   }
 
+  /**
+   * Create a radio button field with true and false value
+   *
+   * @param $field
+   *   the field definition object from the post payload
+   * @param $data
+   *   the whole object from the post payload
+   */
   private function createBooleanField($field, $data) {
     try {
       $fieldMachineName = $this->removeFieldNameSpaces($field);
@@ -387,6 +440,14 @@ class ContentTypesController extends BaseController {
     }
   }
 
+  /**
+   * Create a Single selection select box field
+   *
+   * @param $field
+   *   the field definition object from the post payload
+   * @param $data
+   *   the whole object from the post payload
+   */
   private function createSingleSelectField($field, $data) {
     try {
       $fieldMachineName = $this->removeFieldNameSpaces($field);
@@ -434,6 +495,14 @@ class ContentTypesController extends BaseController {
     }
   }
 
+  /**
+   * Create a multi selection select box field
+   *
+   * @param $field
+   *   the field definition object from the post payload
+   * @param $data
+   *   the whole object from the post payload
+   */
   private function createMultiSelectField($field, $data) {
     try {
       $fieldMachineName = $this->removeFieldNameSpaces($field);
@@ -481,6 +550,14 @@ class ContentTypesController extends BaseController {
     }
   }
 
+  /**
+   * Create a Date field d/m/Y format
+   *
+   * @param $field
+   *   the field definition object from the post payload
+   * @param $data
+   *   the whole object from the post payload
+   */
   private function createDateField($field, $data) {
     if (!module_exists('date')) throw new Exception('Date module is not enabled');
 
@@ -547,6 +624,14 @@ class ContentTypesController extends BaseController {
     }
   }
 
+  /**
+   * Create a Datetime field d/m/Y H:i:s format
+   *
+   * @param $field
+   *   the field definition object from the post payload
+   * @param $data
+   *   the whole object from the post payload
+   */
   private function createDatetimeField($field, $data) {
     if (!module_exists('date')) throw new Exception('Date module is not enabled');
 
@@ -620,3 +705,4 @@ class ContentTypesController extends BaseController {
     }
   }
 }
+

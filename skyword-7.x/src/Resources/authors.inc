@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * authors.inc
+ */
+
+/**
  * Resource callback for Authors Index.
  */
 function _skyword_authors_index($page, $per_page, $fields) {
