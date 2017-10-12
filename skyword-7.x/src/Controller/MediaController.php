@@ -57,9 +57,18 @@ class MediaController extends BaseController {
   /**
   * Used to create a file.
   */
-  public function create($file) {
+  public function create($file, $id = NULL, $metadata = NULL) {
+    if ($id && $metadata) {
+      $file = new stdClass();
+      $file->id = $id;
+      $file->metadata = $metadata;
+
+      return $file;
+    }
+
     try {
       $headers = getallheaders();
+
       preg_match('/filename\=(\".*\")/', $headers['Content-Disposition'], $matches);
 
       // Adds backwards compatability with regression fixed in #1083242
@@ -76,9 +85,10 @@ class MediaController extends BaseController {
       // Sanitize the file extension, name, path and scheme provided by the user.
       $destination = empty($file['filepath'])
         ? file_default_scheme() . '://' . $file['filename']
-        : $this->file_check_destination_uri($file['filepath']);
+        : $this->fileCheckDestinationUri($file['filepath']);
 
       $dir = drupal_dirname($destination);
+
       // Build the destination folder tree if it doesn't already exists.
       if (!file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
         return services_error(t("Could not create destination directory for file."), 500);
@@ -128,7 +138,7 @@ class MediaController extends BaseController {
   /**
   * Check the file destination.
   */
-  private function file_check_destination_uri($uri) {
+  private function fileCheckDestinationUri($uri) {
     $scheme = strstr($uri, '://', TRUE);
     $path = $scheme ? substr($uri, strlen("$scheme://")) : $uri;
 
