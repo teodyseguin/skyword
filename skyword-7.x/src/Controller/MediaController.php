@@ -58,12 +58,19 @@ class MediaController extends BaseController {
   * Used to create a file.
   */
   public function create($file, $id = NULL, $metadata = NULL) {
-    if ($id && $metadata) {
-      $file = new stdClass();
-      $file->id = $id;
-      $file->metadata = $metadata;
+    if ($id && $metadata == 'metadata') {
+      try {
+        return $this->addFileMetadata($file, $id);
+      }
+      catch (Exception $e) {
+        $errorMessage = $e->getMessage();
 
-      return $file;
+        if ($errorMessage) {
+          return services_error(t($errorMessage), 500);
+        }
+
+        return services_error(t('Cannot add metadata to the file with id ' . $id), 500);
+      }
     }
 
     try {
@@ -124,7 +131,23 @@ class MediaController extends BaseController {
 
   public function delete() {}
 
+  private function addFileMetadata($file, $id) {
+    try {
+      $loadedFile = file_load($id);
+      $loadedFile->title = $file['title'];
+      $loadedFile->alt = $file['alt'];
 
+      $loadedFile->field_file_image_title_text[LANGUAGE_NONE][0]['value'] = $file['title'];
+      $loadedFile->field_file_image_alt_text[LANGUAGE_NONE][0]['value'] = $file['alt'];
+
+      file_save($loadedFile);
+
+      return $loadedFile;
+    }
+    catch (Exception $e) {
+      return $e->getMessage();
+    }
+  }
   /**
   * Used for helping with the posting data.
   */
