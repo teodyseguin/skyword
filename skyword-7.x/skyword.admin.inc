@@ -258,6 +258,25 @@ function skyword_user_manage($form, &$form_state) {
     array('data' => &$mail_enable),
   );
 
+  $id_enable = array(
+    '#type' => 'checkbox',
+    '#default_value' => isset($data['data']['fields']['id']) ? $data['data']['fields']['id']['status'] : 0,
+  );
+  $id_mapto = array(
+    '#type' => 'select',
+    '#options' => skyword_user_expected_fields(),
+    '#default_value' => isset($data['data']['fields']['id']) ? $data['data']['fields']['id']['mapto'] : 'none',
+  );
+  $form['data']['fields']['id']['status'] = &$id_enable;
+  $form['data']['fields']['id']['mapto'] = &$id_mapto;
+  $form['data']['fields']['#rows']['id'] = array(
+    array('data' => 'ID'),
+    array('data' => 'The Unique ID of the User/Author'),
+    array('data' => &$id_mapto),
+    array('data' => t('No')),
+    array('data' => &$id_enable),
+  );
+
   foreach ($fields as $id => $field) {
     $enable = array(
       '#type' => 'checkbox',
@@ -311,14 +330,17 @@ function skyword_user_expected_fields() {
  */
 function skyword_user_manage_validate($form, &$form_state) {
   foreach ($form_state['values']['data']['fields'] as $machine_name => $field) {
-    $field_info = field_info_field($machine_name);
-
     if ($machine_name == 'mail' && $field['mapto'] != 'mail') {
       form_set_error('error', 'Field E-mail should map to E-mail.');
     }
 
+    if ($machine_name == 'id' && $field['mapto'] != 'id') {
+      form_set_error('error', 'Field ID should map to ID');
+    }
+
+    $field_info = field_info_field($machine_name);
+
     switch ($field['mapto']) {
-      case 'id':
       case 'firstName':
       case 'lastName':
       case 'byline':
