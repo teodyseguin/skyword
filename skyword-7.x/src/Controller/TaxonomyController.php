@@ -1,7 +1,6 @@
 <?php
 
 include 'BaseController.php';
-include 'ControllerInterface.php';
 
 class TaxonomyController extends BaseController {
 
@@ -37,6 +36,12 @@ class TaxonomyController extends BaseController {
       return $this->buildData($this->query->execute());
     }
     catch (Exception $e) {
+      $errorMessage = $e->getMessage();
+
+      if ($errorMessage) {
+        return services_error(t($errorMessage), 500);
+      }
+
       return services_error(t('Unable to query taxonomy table.'), 500);
     }
   }
@@ -45,34 +50,45 @@ class TaxonomyController extends BaseController {
    * Retrieve a specific Taxonomy
    */
   public function retrieve($id, $terms = NULL, $page = 1, $per_page = 250, $fields = NULL) {
-    $taxonomy = taxonomy_vocabulary_load($id);
+    try {
+      $taxonomy = taxonomy_vocabulary_load($id);
 
-    if (!$terms) {
-      $data = $this->buildData($taxonomy, FALSE);
+      if (!$terms) {
+        $data = $this->buildData($taxonomy, FALSE);
 
-      if ($fields != NULL) {
-        parent::limitOutputByFields($fields, $data);
+        if ($fields != NULL) {
+          parent::limitOutputByFields($fields, $data);
+        }
+
+        return $data;
       }
 
-      return $data;
+      if ($terms == 'terms') {
+        $terms = entity_load('taxonomy_term', FALSE, ['vid' => $taxonomy->vid]);
+        $data = NULL;
+
+        if (count($terms) < $per_page) {
+          $data = $this->buildTermsData($terms);
+        }
+        else {
+          $data = $this->buildDataWithCount($per_page, $terms, 'terms');
+        }
+
+        if ($fields != NULL) {
+          parent::limitOutputByFields($fields, $data);
+        }
+
+        return $data;
+      }
     }
+    catch (Exception $e) {
+      $errorMessage = $e->getMessage();
 
-    if ($terms == 'terms') {
-      $terms = entity_load('taxonomy_term', FALSE, ['vid' => $taxonomy->vid]);
-      $data = NULL;
-
-      if (count($terms) < $per_page) {
-        $data = $this->buildTermsData($terms);
-      }
-      else {
-        $data = $this->buildDataWithCount($per_page, $terms, 'terms');
+      if ($errorMessage) {
+        return services_error(t($errorMessage), 500);
       }
 
-      if ($fields != NULL) {
-        parent::limitOutputByFields($fields, $data);
-      }
-
-      return $data;
+      return services_error(t('Unable to query taxonomy table'), 500);
     }
   }
 
@@ -154,29 +170,34 @@ class TaxonomyController extends BaseController {
    *   an array of taxonomies
    */
   protected function buildData($taxonomies, $list = TRUE) {
-    if ($list) {
-      $data = [];
+    try {
+      if ($list) {
+        $data = [];
 
-      foreach ($taxonomies as $taxonomy) {
-        $obj = new stdClass();
-        $obj->id = $taxonomy->vid;
-        $obj->name = $taxonomy->machine_name;
-        $obj->description = $taxonomy->description;
-        $obj->numTerms = $this->getTaxonomyTermsCount($taxonomy->vid);
+        foreach ($taxonomies as $taxonomy) {
+          $obj = new stdClass();
+          $obj->id = $taxonomy->vid;
+          $obj->name = $taxonomy->machine_name;
+          $obj->description = $taxonomy->description;
+          $obj->numTerms = $this->getTaxonomyTermsCount($taxonomy->vid);
 
-        $data[] = $obj;
+          $data[] = $obj;
+        }
+
+        return $data;
       }
+      else {
+        $obj = new stdClass();
+        $obj->id = $taxonomies->vid;
+        $obj->name = $taxonomies->machine_name;
+        $obj->description = $taxonomies->description;
+        $obj->numTerms = $this->getTaxonomyTermsCount($taxonomies->vid);
 
-      return $data;
+        return $obj;
+      }
     }
-    else {
-      $obj = new stdClass();
-      $obj->id = $taxonomies->vid;
-      $obj->name = $taxonomies->machine_name;
-      $obj->description = $taxonomies->description;
-      $obj->numTerms = $this->getTaxonomyTermsCount($taxonomies->vid);
-
-      return $obj;
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
     }
   }
 
@@ -184,17 +205,22 @@ class TaxonomyController extends BaseController {
    * Build the data for taxonomy terms
    */
   private function buildTermsData($terms) {
-    $data = [];
+    try {
+      $data = [];
 
-    foreach ($terms as $term) {
-      $obj = new stdClass();
-      $obj->id = $term->tid;
-      $obj->value = $term->name;
+      foreach ($terms as $term) {
+        $obj = new stdClass();
+        $obj->id = $term->tid;
+        $obj->value = $term->name;
 
-      $data[] = $obj;
+        $data[] = $obj;
+      }
+
+      return $data;
     }
-
-    return $data;
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
   }
 
   /**
