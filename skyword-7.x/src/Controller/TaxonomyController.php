@@ -21,17 +21,20 @@ class TaxonomyController extends BaseController {
       $this->fields = $fields;
 
       $this->query = db_select('taxonomy_vocabulary', 'v');
-      $this->query->join('skyword_entities', 'e', 'e.bundle = v.machine_name');
-      $this->query->condition('e.status', 1);
 
-      if ($id !== NULL) {
+      if ($id != NULL) {
+        $this->query->join('skyword_entities', 'e');
         $this->query->condition('v.vid', $id);
+        $this->query->condition('e.status', 1);
+        $this->query->fields('v', ['vid' => 'vid', 'machine_name' => 'machine_name', 'description' => 'description']);
+
+        return $this->buildData($this->query->execute(), FALSE);
       }
 
+      $this->query->join('skyword_entities', 'e', 'e.bundle = v.machine_name');
+      $this->query->condition('e.status', 1);
       $this->query->fields('v', ['vid' => 'vid', 'machine_name' => 'machine_name', 'description' => 'description']);
-
       $this->pager();
-      $result = $this->query->execute();
 
       return $this->buildData($this->query->execute());
     }
