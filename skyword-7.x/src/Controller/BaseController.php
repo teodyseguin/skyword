@@ -120,4 +120,22 @@ class BaseController {
 
     return $data;
   }
+
+  /**
+   * Helper method to generate errors
+   *
+   * @param $customMessage
+   *   the fallback error message to show if there are no exception error
+   * @param $exceptionError
+   *   the exception error object
+   */
+  protected function showErrors($customMessage, $exceptionError) {
+    $errorMessage = $exceptionError->getMessage();
+
+    if ($errorMessage) {
+      return services_error(t($errorMessage), 500);
+    }
+
+    return services_error(t($customMessage), 500);
+  }
 }
