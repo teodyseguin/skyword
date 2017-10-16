@@ -113,12 +113,11 @@ class TaxonomyController extends BaseController {
    */
   public function create($data, $id = NULL, $terms = NULL) {
     if (!$id && !$terms) {
-      $explodeName = explode(' ', $data['name']);
-      $machineName = implode('_', $explodeName);
+      $machineName = str_replace(' ', '_', $data['name']);
 
       $taxonomy = new stdClass();
       $taxonomy->name = $data['name'];
-      $taxonomy->machine_name = $machineName;
+      $taxonomy->machine_name = strtolower($machineName);
       $taxonomy->description = t($data['description']);
       $taxonomy->module = 'taxonomy';
 
