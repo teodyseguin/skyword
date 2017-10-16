@@ -169,6 +169,9 @@ class AuthorController extends BaseController {
       if ($machineName == 'mail') {
         $d->{$field['mapto']} = $user->{$machineName};
       }
+      elseif ($machineName == 'id') {
+        $d->{$field['mapto']} = $user->uid;
+      }
       else {
         $d->{$field['mapto']} = isset($user->{$machineName}[$ln])
         ? $field['mapto'] != 'icon'
@@ -188,7 +191,7 @@ class AuthorController extends BaseController {
    *   the request post data
    */
   private function prepareNewUser($data) {
-    $userName = strtolower($data['lastName']) . strtolower($data['firstName']);
+    $userName = str_replace(' ', '', strtolower($data['lastName']) . strtolower($data['firstName']));
     $mail = $data['email'];
     $ln = LANGUAGE_NONE;
 
@@ -212,9 +215,11 @@ class AuthorController extends BaseController {
           $newUser[$machineName][$ln][0]['value'] = !empty($data[$field['mapto']]) ? $data[$field['mapto']] : '';
         }
         else {
-          $icon = file_get_contents($data[$field['mapto']]);
-          $file = file_save_data($icon, NULL, FILE_EXISTS_REPLACE);
-          $newUser[$machineName][$ln][0]['fid'] = $file->fid;
+          if (isset($data[$field['mapto']]) && !empty($data[$field['mapto']])) {
+            $icon = file_get_contents($data[$field['mapto']]);
+            $file = file_save_data($icon, NULL, FILE_EXISTS_REPLACE);
+            $newUser[$machineName][$ln][0]['fid'] = $file->fid;
+          }
         }
       }
     }
