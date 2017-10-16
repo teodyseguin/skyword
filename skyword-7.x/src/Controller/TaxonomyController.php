@@ -168,55 +168,6 @@ class TaxonomyController extends BaseController {
   }
 
   /**
-   * Build the data per count
-   *
-   * @param $per_page
-   *   the number of items to be included in a page
-   * @param $taxonomies
-   *   an array of taxonomies
-   */
-  private function buildDataWithCount($per_page, $data, $type) {
-    $counter = 0;
-    $container = [];
-
-    switch ($type) {
-      case 'taxonomies':
-        foreach ($data as $taxonomy) {
-          if ($counter < $per_page) {
-            $obj = new stdClass();
-            $obj->id = $taxonomy->vid;
-            $obj->name = $taxonomy->name;
-            $obj->description = $taxonomy->description;
-            $obj->numTerms = $this->getTaxonomyTermsCount($taxonomy->vid);
-
-            $container[] = $obj;
-          }
-
-          $counter++;
-        }
-
-        break;
-
-      case 'terms':
-        foreach ($data as $term) {
-          if ($counter < $per_page) {
-            $obj = new stdClass();
-            $obj->id = $term->tid;
-            $obj->value = $term->name;
-
-            $container[] = $obj;
-          }
-
-          $counter++;
-        }
-
-        break;
-    }
-
-    return $container;
-  }
-
-  /**
    * Get the number of terms associated to a Taxonomy
    *
    * @param $vid
@@ -244,16 +195,9 @@ class TaxonomyController extends BaseController {
       $this->query->orderBy('tt.tid', 'ASC');
       $this->pager();
 
-      $terms = $this->query->execute();
+      $terms = $this->query->execute()->fetchAll();
 
-      $data = NULL;
-
-      if (count($terms) < $per_page) {
-        $data = $this->buildTermsData($terms);
-      }
-      else {
-        $data = $this->buildDataWithCount($per_page, $terms, 'terms');
-      }
+      $data = $this->buildTermsData($terms);
 
       if ($fields != NULL) {
         parent::limitOutputByFields($fields, $data);
