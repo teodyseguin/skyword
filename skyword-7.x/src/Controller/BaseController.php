@@ -48,39 +48,6 @@ class BaseController {
   }
 
   /**
-   * Build the data normally
-   *
-   * @param $entities
-   *   an array of entity object
-   */
-  protected function buildData($entities, $fields, $list = TRUE) {
-    if ($list) {
-      $data = [];
-
-      foreach ($entities as $entity) {
-        $obj = new stdClass();
-
-        foreach ($fields as $field) {
-          if (property_exists($entity, $field)) $obj->{$field} = $entity->{$field};
-        }
-
-        $data[] = $obj;
-      }
-
-      return $data;
-    }
-    else {
-      $obj = new stdClass();
-
-      foreach ($fields as $field) {
-        $obj->{$field} = $entities->{$field};
-      }
-
-      return $obj;
-    }
-  }
-
-  /**
    * Extract the fields from a string
    */
   protected function extractFields($fields) {
@@ -119,5 +86,23 @@ class BaseController {
     }
 
     return $data;
+  }
+
+  /**
+   * Helper method to generate errors
+   *
+   * @param $customMessage
+   *   the fallback error message to show if there are no exception error
+   * @param $exceptionError
+   *   the exception error object
+   */
+  protected function showErrors($customMessage, $exceptionError) {
+    $errorMessage = $exceptionError->getMessage();
+
+    if ($errorMessage) {
+      return services_error(t($errorMessage), 500);
+    }
+
+    return services_error(t($customMessage), 500);
   }
 }
