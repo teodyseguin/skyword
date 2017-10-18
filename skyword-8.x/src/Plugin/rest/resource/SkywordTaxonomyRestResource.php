@@ -13,15 +13,14 @@ use Psr\Log\LoggerInterface;
  * Provides a resource to get view modes by entity and bundle.
  *
  * @RestResource(
- *   id = "skyword_taxonomies_rest_resource",
- *   label = @Translation("Skyword taxonomies rest resource"),
+ *   id = "skyword_taxonomy_rest_resource",
+ *   label = @Translation("Skyword taxonomy rest resource"),
  *   uri_paths = {
- *     "canonical" = "/skyword/publish/v1/taxonomies",
- *     "https://www.drupal.org/link-relations/create" = "/skyword/publish/v1/taxonomies"
+ *     "canonical" = "/skyword/publish/v1/taxonomies/{taxonomy}"
  *   }
  * )
  */
-class SkywordTaxonomiesRestResource extends ResourceBase {
+class SkywordTaxonomyRestResource extends ResourceBase {
 
   /**
    * A current user instance.
@@ -31,7 +30,7 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
   protected $currentUser;
 
   /**
-   * Constructs a new SkywordTaxonomiesRestResource object.
+   * Constructs a new SkywordTaxonomyRestResource object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -73,44 +72,32 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
   }
 
   /**
-   * Responds to POST requests.
-   *
-   * Returns a list of bundles for specified entity.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
-   *   Throws exception expected.
-   */
-  public function post() {
-
-    // You must to implement the logic of your REST Resource here.
-    // Use current user after pass authentication to validate access.
-    if (!$this->currentUser->hasPermission('access content')) {
-      throw new AccessDeniedHttpException();
-    }
-
-    return new ResourceResponse("Implement REST State POST!");
-  }
-
-  /**
    * Responds to GET requests.
+   *
+   * @param string $id
+   *   The unique identifier of the Taxonomy.
    */
-  public function get() {
+  public function get($id) {
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
-    $entities = $this->getTaxonomies();
-    return new ResourceResponse($this->buildData($entities));
+    $entities = $this->getTaxonomy($id);
+    return new ResourceResponse($this->buildData($entities, FALSE));
   }
 
   /**
    * Get all the Taxonomies.
+   *
+   * @param string $id
+   *   the unique identifier of the Taxonomy Vocabulary e.g. tags.
    */
-  private function getTaxonomies() {
+  private function getTaxonomy($id) {
     $query = \Drupal::entityQuery('taxonomy_vocabulary');
-    $taxonomyIds = $query->execute();
+    $query->condition('vid', $id);
+    $taxonomyId = $query->execute();
 
-    return \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary')->loadMultiple($taxonomyIds);
+    return \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary')->loadMultiple($taxonomyId);
   }
 
   /**
@@ -120,14 +107,12 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
    *   an array of Taxonomy entities.
    */
   private function buildData(array $taxonomies) {
-    $data = [];
-
     foreach ($taxonomies as $entity) {
       $id = $entity->id();
       $description = $entity->get('description');
       $numTerms = $this->getTaxonomyTermsCount($id);
 
-      $data[] = [
+      $data = [
         'id' => $id,
         'name' => $id,
         'description' => $description,
