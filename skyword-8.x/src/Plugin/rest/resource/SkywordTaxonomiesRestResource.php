@@ -94,11 +94,11 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
    * Responds to GET requests.
    */
   public function get() {
-    $entities = $this->getTaxonomies(); 
+    $entities = $this->getTaxonomies();
 
     return new ResourceResponse($this->buildData($entities));
   }
- 
+
   /**
    * Get all the Taxonomies.
    */
@@ -112,13 +112,13 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
   /**
    * Build the structure of the data to be return.
    *
-   * @param $taxonomies
+   * @param array $taxonomies
    *   an array of Taxonomy entities.
-   * @param $list
+   * @param bool $list
    *   default to TRUE. signifies that we are returning a list.
    *   set to FALSE. we signifies that we want to return a specific Taxonomy.
    */
-  private function buildData($taxonomies, $list = TRUE) {
+  private function buildData(array $taxonomies, $list = TRUE) {
     if ($list) {
       $data = [];
 
@@ -136,14 +136,14 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
       }
 
       return $data;
-    } 
+    }
   }
 
   /**
-   * Get the number of Taxonomy Terms via Taxonomy ID
+   * Get the number of Taxonomy Terms via Taxonomy ID.
    *
-   * @param $id
-   *   the unique identifier of the Taxonomy
+   * @param int $id
+   *   the unique identifier of the Taxonomy.
    */
   private function getTaxonomyTermsCount($id) {
     $query = \Drupal::entityQuery('taxonomy_term');
@@ -152,5 +152,5 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
 
     return intval($count);
   }
-}
 
+}

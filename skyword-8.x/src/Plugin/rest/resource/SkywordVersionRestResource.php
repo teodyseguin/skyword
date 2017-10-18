@@ -91,11 +91,11 @@ class SkywordVersionRestResource extends ResourceBase {
       'version' => 1,
       'cms' => [
         'name' => 'Drupal',
-        'version' => \Drupal::VERSION
-      ]
+        'version' => \Drupal::VERSION,
+      ],
     ];
 
     return new ResourceResponse($response);
   }
-}
 
+}
