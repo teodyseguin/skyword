@@ -14,4 +14,7 @@
 3. Go to `http://www.yoursite.com/admin/config/services/rest` and enable all "Skyword" related resources.
 4. Edit each of the resources you enabled.
 5. Select which methods you want to be available for that resource. e.g. GET, POST, etc.
+6. Select `json` for the Accepted request formats
+7. Select `basic_auth` for Authentication providers
+8. Assign the "Skyword" related permissions under `http://www.yoursite.com/admin/people/permissions`
 
