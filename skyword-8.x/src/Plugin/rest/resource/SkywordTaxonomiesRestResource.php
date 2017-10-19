@@ -5,6 +5,7 @@ namespace Drupal\skyword\Plugin\rest\resource;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
+use Drupal\taxonomy\Entity\Vocabulary;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
@@ -75,12 +76,13 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
   /**
    * Responds to POST requests.
    *
-   * Returns a list of bundles for specified entity.
+   * @param array $data
+   *   The post request payload object.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    *   Throws exception expected.
    */
-  public function post() {
+  public function post(array $data) {
 
     // You must to implement the logic of your REST Resource here.
     // Use current user after pass authentication to validate access.
@@ -88,7 +90,24 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
       throw new AccessDeniedHttpException();
     }
 
-    return new ResourceResponse("Implement REST State POST!");
+    try {
+      $id = str_replace(' ', '', strtolower($data['name']));
+      $name = str_replace(' ', '', $data['name']);
+      $description = $data['description'];
+
+      $taxonomy = Vocabulary::create([
+        'vid' => $id,
+        'name' => $name,
+        'description' => $description,
+      ]);
+
+      $taxonomy->save();
+
+      return new ResourceResponse($data);
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
   }
 
   /**
