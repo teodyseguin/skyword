@@ -56,6 +56,104 @@ function skyword_schema() {
   );
 }
 
+/**
+ * Implements hook_install().
+ */
+function skyword_install() {
+  skyword_enable_available_taxonomies();
+  skyword_enable_available_content_types();
+  skyword_enable_user_role_fields();
+}
+
+/**
+ * Check all available Taxonomies from the site
+ * and enable them for Skyword use.
+ */
+function skyword_enable_available_taxonomies() {
+  $taxonomies = taxonomy_get_vocabularies();
+
+  foreach ($taxonomies as $taxonomy) {
+    db_merge('skyword_entities')
+    ->key(array(
+      'entity_type' => 'taxonomy_term',
+      'bundle' => $taxonomy->machine_name,
+    ))
+    ->fields(array(
+      'entity_type' => 'taxonomy_term',
+      'bundle' => $taxonomy->machine_name,
+      'status' => 1,
+      'data' => '',
+    ))
+    ->execute();
+  }
+}
+
+/**
+ * Check all available Content Types from the site
+ * and enable them for Skyword use.
+ */
+function skyword_enable_available_content_types() {
+  $content_types = node_type_get_types();
+
+  foreach ($content_types as $content_type) {
+    $content_type_fields = field_info_instances('node', $content_type->type);
+    $fields = [];
+
+    foreach ($content_type_fields as $id => $field) {
+      $fields[$id] = ['status' => 1];
+    }
+
+    db_merge('skyword_entities')
+    ->key(array(
+      'entity_type' => 'node',
+      'bundle' => $content_type->type,
+    ))
+    ->fields(array(
+      'entity_type' => 'node',
+      'bundle' => $content_type->type,
+      'status' => 1,
+      'data' => serialize($fields),
+    ))
+    ->execute();
+  }
+}
+
+/**
+ * Assign the pre-requisite user role (exported by site configuration feature module),
+ * map the fields into their corresponding user fields and enable all of the fields.
+ */
+function skyword_enable_user_role_fields() {
+  $user_fields = field_info_instances('user', 'user');
+
+  $fields = [];
+
+  $fields['id'] = ['mapto' => 'id', 'status' => 1];
+  $fields['mail'] = ['mapto' => 'mail', 'status' => 1];
+  $fields['field_first_name'] = ['mapto' => 'firstName', 'status' => 1];
+  $fields['field_last_name'] = ['mapto' => 'lastName', 'status' => 1];
+  $fields['field_byline'] = ['mapto' => 'byline', 'status' => 1];
+  $fields['field_icon'] = ['mapto' => 'icon', 'status' => 1];
+
+  $data['fields'] = $fields;
+  $data['role'] = 4;
+
+  db_merge('skyword_entities')
+  ->key(array(
+    'entity_type' => 'user',
+    'bundle' => 'user',
+  ))
+  ->fields(array(
+    'entity_type' => 'user',
+    'bundle' => 'user',
+    'status' => 1,
+    'data' => serialize($data),
+  ))
+  ->execute();
+}
+
+/**
+ * Imlements hook_update_7001().
+ */
 function skyword_update_7001() {
   $field = array(
     'description' => 'Stores field mapping information for this entity type.',
