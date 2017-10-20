@@ -1,13 +1,13 @@
 <?php
 /**
  * @file
- * site_configuration.features.inc
+ * skyword_site_configuration.features.inc
  */
 
 /**
  * Implements hook_ctools_plugin_api().
  */
-function site_configuration_ctools_plugin_api($module = NULL, $api = NULL) {
+function skyword_site_configuration_ctools_plugin_api($module = NULL, $api = NULL) {
   if ($module == "services" && $api == "services") {
     return array("version" => "3");
   }
@@ -19,7 +19,7 @@ function site_configuration_ctools_plugin_api($module = NULL, $api = NULL) {
 /**
  * Implements hook_default_oauth2_server().
  */
-function site_configuration_default_oauth2_server() {
+function skyword_site_configuration_default_oauth2_server() {
   $items = array();
   $items['skyword'] = entity_import('oauth2_server', '{
     "name" : "skyword",
@@ -37,7 +37,7 @@ function site_configuration_default_oauth2_server() {
         "password" : "password",
         "urn:ietf:params:oauth:grant-type:jwt-bearer" : 0
       },
-      "always_issue_new_refresh_token" : 1,
+      "always_issue_new_refresh_token" : 0,
       "unset_refresh_token_after_use" : 1,
       "access_lifetime" : "3600",
       "id_lifetime" : "3600",

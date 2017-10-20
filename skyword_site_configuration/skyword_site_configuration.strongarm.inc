@@ -1,14 +1,21 @@
 <?php
 /**
  * @file
- * site_configuration.strongarm.inc
+ * skyword_site_configuration.strongarm.inc
  */
 
 /**
  * Implements hook_strongarm().
  */
-function site_configuration_strongarm() {
+function skyword_site_configuration_strongarm() {
   $export = array();
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'node_submitted_page';
+  $strongarm->value = FALSE;
+  $export['node_submitted_page'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -128,27 +135,6 @@ Z5ZBGDs8i6Kpu/vWiBuPLO6kmbrjj8eX6Hv0iWBOyUOyEogT9gMJ
   $strongarm->name = 'oauth2_server_next_certificate_id';
   $strongarm->value = 4;
   $export['oauth2_server_next_certificate_id'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'oauth_common_enable_provider';
-  $strongarm->value = 1;
-  $export['oauth_common_enable_provider'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'oauth_common_login_path';
-  $strongarm->value = 'user/login';
-  $export['oauth_common_login_path'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'oauth_common_request_token_lifetime';
-  $strongarm->value = '3600';
-  $export['oauth_common_request_token_lifetime'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */

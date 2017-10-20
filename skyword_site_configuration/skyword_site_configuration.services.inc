@@ -1,13 +1,13 @@
 <?php
 /**
  * @file
- * site_configuration.services.inc
+ * skyword_site_configuration.services.inc
  */
 
 /**
  * Implements hook_default_services_endpoint().
  */
-function site_configuration_default_services_endpoint() {
+function skyword_site_configuration_default_services_endpoint() {
   $export = array();
 
   $endpoint = new stdClass();
@@ -15,7 +15,7 @@ function site_configuration_default_services_endpoint() {
   $endpoint->api_version = 3;
   $endpoint->name = 'skyword_services';
   $endpoint->server = 'rest_server';
-  $endpoint->path = 'skyword/publish/v1';
+  $endpoint->path = 'skyword/v1';
   $endpoint->authentication = array(
     'oauth2_server' => array(
       'server' => 'skyword',
@@ -45,7 +45,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -54,7 +54,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -63,7 +63,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -72,7 +72,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -85,7 +85,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -94,7 +94,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -103,18 +103,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
-            ),
-          ),
-        ),
-      ),
-      'actions' => array(
-        'field-types' => array(
-          'enabled' => '1',
-          'settings' => array(
-            'oauth2_server' => array(
-              'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -127,7 +116,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -136,7 +125,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -145,7 +134,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -158,7 +147,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -167,7 +156,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -176,7 +165,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -185,7 +174,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -198,7 +187,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -207,7 +196,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),
@@ -216,7 +205,7 @@ function site_configuration_default_services_endpoint() {
           'settings' => array(
             'oauth2_server' => array(
               'require_authentication' => '1',
-              'scope' => '',
+              'scope' => 'skyword',
             ),
           ),
         ),

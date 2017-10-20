@@ -1,32 +1,14 @@
 <?php
 /**
  * @file
- * site_configuration.features.user_permission.inc
+ * skyword_site_configuration.features.user_permission.inc
  */
 
 /**
  * Implements hook_user_default_permissions().
  */
-function site_configuration_user_default_permissions() {
+function skyword_site_configuration_user_default_permissions() {
   $permissions = array();
-
-  // Exported permission: 'administer oauth2 authentication'.
-  $permissions['administer oauth2 authentication'] = array(
-    'name' => 'administer oauth2 authentication',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'oauth2_authentication',
-  );
-
-  // Exported permission: 'administer oauth2 server'.
-  $permissions['administer oauth2 server'] = array(
-    'name' => 'administer oauth2 server',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'oauth2_server',
-  );
 
   // Exported permission: 'author create'.
   $permissions['author create'] = array(

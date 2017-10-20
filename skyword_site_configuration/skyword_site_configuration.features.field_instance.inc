@@ -1,14 +1,126 @@
 <?php
 /**
  * @file
- * site_configuration.features.field_instance.inc
+ * skyword_site_configuration.features.field_instance.inc
  */
 
 /**
  * Implements hook_field_default_field_instances().
  */
-function site_configuration_field_default_field_instances() {
+function skyword_site_configuration_field_default_field_instances() {
   $field_instances = array();
+
+  // Exported field_instance:
+  // 'oauth2_server_authorization_code-oauth2_server_authorization_code-scopes'.
+  $field_instances['oauth2_server_authorization_code-oauth2_server_authorization_code-scopes'] = array(
+    'bundle' => 'oauth2_server_authorization_code',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'oauth2_server_authorization_code',
+    'field_name' => 'scopes',
+    'label' => 'Scopes',
+    'required' => FALSE,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 0,
+    ),
+  );
+
+  // Exported field_instance: 'oauth2_server_token-access-scopes'.
+  $field_instances['oauth2_server_token-access-scopes'] = array(
+    'bundle' => 'access',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'oauth2_server_token',
+    'field_name' => 'scopes',
+    'label' => 'Scopes',
+    'required' => FALSE,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 0,
+    ),
+  );
+
+  // Exported field_instance: 'oauth2_server_token-refresh-scopes'.
+  $field_instances['oauth2_server_token-refresh-scopes'] = array(
+    'bundle' => 'refresh',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'oauth2_server_token',
+    'field_name' => 'scopes',
+    'label' => 'Scopes',
+    'required' => FALSE,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 0,
+    ),
+  );
 
   // Exported field_instance: 'user-user-field_byline'.
   $field_instances['user-user-field_byline'] = array(
@@ -162,6 +274,7 @@ function site_configuration_field_default_field_instances() {
   t('First Name');
   t('Icon');
   t('Last Name');
+  t('Scopes');
 
   return $field_instances;
 }

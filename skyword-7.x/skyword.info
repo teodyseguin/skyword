@@ -1,6 +1,6 @@
 name = Skyword
 description = Provide an API for exposing web services resources to Skyword.
-package = Services
+package = Skyword
 core = 7.x
 configure = admin/structure/services/skyword
 

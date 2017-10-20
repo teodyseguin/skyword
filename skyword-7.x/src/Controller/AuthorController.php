@@ -71,7 +71,7 @@ class AuthorController extends BaseController {
     $newUser = $this->prepareNewUser($data);
 
     try {
-      user_save(NULL, $newUser);
+      $this->setSkywordAuthorsRole(user_save(NULL, $newUser));
 
       return (object)$data;
     }
@@ -191,7 +191,7 @@ class AuthorController extends BaseController {
    *   the request post data
    */
   private function prepareNewUser($data) {
-    $userName = str_replace(' ', '', strtolower($data['lastName']) . strtolower($data['firstName']));
+    $userName = str_replace(' ', '', strtolower($data['firstName']) . strtolower($data['lastName']));
     $mail = $data['email'];
     $ln = LANGUAGE_NONE;
 
@@ -225,6 +225,17 @@ class AuthorController extends BaseController {
     }
 
     return $newUser;
+  }
+
+  /**
+   * Assign skyword_authors role to the user.
+   *
+   * @param object $user
+   *   The user object.
+   */
+  private function setSkywordAuthorsRole($user) {
+    $user_role = user_role_load_by_name('skyword_authors');
+    user_multiple_role_edit([$user->uid], 'add_role', $user_role->rid);
   }
 }
 
