@@ -13,15 +13,14 @@ use Psr\Log\LoggerInterface;
  * Provides a resource to get view modes by entity and bundle.
  *
  * @RestResource(
- *   id = "skyword_authors_rest_resource",
- *   label = @Translation("Skyword authors rest resource"),
+ *   id = "skyword_author_rest_resource",
+ *   label = @Translation("Skyword author rest resource"),
  *   uri_paths = {
- *     "canonical" = "/skyword/v1/authors",
- *     "https://www.drupal.org/link-relations/create" = "/skyword/v1/authors"
+ *     "canonical" = "/skyword/v1/authors/{authorId}"
  *   }
  * )
  */
-class SkywordAuthorsRestResource extends ResourceBase {
+class SkywordAuthorRestResource extends ResourceBase {
 
   /**
    * A current user instance.
@@ -73,36 +72,21 @@ class SkywordAuthorsRestResource extends ResourceBase {
   }
 
   /**
-   * Responds to POST requests.
-   *
-   * Returns a list of bundles for specified entity.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
-   *   Throws exception expected.
-   */
-  public function post() {
-
-    // You must to implement the logic of your REST Resource here.
-    // Use current user after pass authentication to validate access.
-    if (!$this->currentUser->hasPermission('access content')) {
-      throw new AccessDeniedHttpException();
-    }
-
-    return new ResourceResponse("Implement REST State POST!");
-  }
-
-  /**
    * Responds to GET requests.
    *
-   * Returns a list of users/authors
+   * Returns a specific of user/author.
+   *
+   * @param int $authorId
+   *   The unique identifier of the User/Author.
    */
-  public function get() {
+  public function get($authorId) {
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
     try {
       $query = \Drupal::entityQuery('user');
+      $query->condition('uid', $authorId);
       $nids = $query->execute();
       $entities = \Drupal::entityTypeManager()->getStorage('user')->loadMultiple($nids);
 
@@ -115,7 +99,7 @@ class SkywordAuthorsRestResource extends ResourceBase {
           $byline = $this->getByline($user);
           $icon = $this->getUserPicture($user);
 
-          $data[] = [
+          $data = [
             'id' => $id,
             'mail' => $mail,
             'firstName' => $firstName,
