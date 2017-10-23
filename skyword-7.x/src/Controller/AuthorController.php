@@ -81,16 +81,6 @@ class AuthorController extends BaseController {
   }
 
   /**
-   * Update a Taxonomy
-   */
-  public function update() {}
-
-  /**
-   * Delete a Taxonomy
-   */
-  public function delete() {}
-
-  /**
    * Check which user role are enabled for skyword use
    */
   private function checkUserEntityRoleEnabled() {

@@ -98,16 +98,6 @@ class TaxonomyController extends BaseController {
   }
 
   /**
-   * Update a Taxonomy
-   */
-  public function update() {}
-
-  /**
-   * Delete a Taxonomy
-   */
-  public function delete() {}
-
-  /**
    * Build the data normally
    *
    * @param $taxonomies
@@ -253,6 +243,8 @@ class TaxonomyController extends BaseController {
     try {
       taxonomy_vocabulary_save($taxonomy);
 
+      $this->skywordEnableTaxonomy($taxonomy->name);
+
       return (object)[
         'name' => $taxonomy->name,
         'description' => $taxonomy->description,
@@ -261,6 +253,29 @@ class TaxonomyController extends BaseController {
     catch (Exception $e) {
       return $this->showErrors('Unable to create a Taxonomy named ' . $data['name'], $e);
     }
+  }
+
+  /**
+   * Enable the newly created Taxonomy for skyword use.
+   *
+   * @param string $taxonomyName
+   *   the machine name of the newly created Taxonomy
+   */
+  private function skywordEnableTaxonomy($taxonomyName) {
+    $name = str_replace(' ', '_', strtolower($taxonomyName));
+
+    db_merge('skyword_entities')
+    ->key(array(
+      'entity_type' => 'taxonomy_term',
+      'bundle' => $name,
+    ))
+    ->fields(array(
+      'entity_type' => 'taxonomy_term',
+      'bundle' => $name,
+      'status' => 1,
+      'data' => '',
+    ))
+    ->execute();
   }
 }
 
