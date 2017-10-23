@@ -128,6 +128,8 @@ class ContentTypesController extends BaseController {
         }
       }
 
+      $this->enableNewlyCreatedContentType($data);
+
       return $this->getTypes($data['name']);
     }
     catch (Exception $e) {
@@ -139,13 +141,6 @@ class ContentTypesController extends BaseController {
 
       return services_error(t('Cannot create a content type.'), 500);
     }
-  }
-
-  /**
-   * Validation checks to prevent us from breaking Drupal!
-   */
-  private function valid($data) {
-    return true;
   }
 
   /**
@@ -699,6 +694,40 @@ class ContentTypesController extends BaseController {
       );
 
       field_create_instance($instance);
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
+  }
+
+  /**
+   * Enable immediately the newly created content type for skyword use.
+   *
+   * @param $data
+   *   The post request data object
+   */
+  private function enableNewlyCreatedContentType($data) {
+    $contentType = $data['name'];
+    $contentTypeFields = field_info_instances('node', $contenType);
+    $fields = [];
+
+    foreach ($contentTypeFields as $id => $field) {
+      $fields[$id] = ['status' => 1];
+    }
+
+    try {
+      db_merge('skyword_entities')
+      ->key(array(
+        'entity_type' => 'node',
+        'bundle' => $contentType,
+      ))
+      ->fields(array(
+        'entity_type' => 'node',
+        'bundle' => $contentType,
+        'status' => 1,
+        'data' => serialize($fields),
+      ))
+      ->execute();
     }
     catch (Exception $e) {
       throw new Exception($e->getMessage());
