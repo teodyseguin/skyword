@@ -16,7 +16,8 @@ use Psr\Log\LoggerInterface;
  *   id = "skyword_authors_rest_resource",
  *   label = @Translation("Skyword authors rest resource"),
  *   uri_paths = {
- *     "canonical" = "/skyword/publish/v1/authors"
+ *     "canonical" = "/skyword/v1/authors",
+ *     "https://www.drupal.org/link-relations/create" = "/skyword/v1/authors"
  *   }
  * )
  */
@@ -88,6 +89,44 @@ class SkywordAuthorsRestResource extends ResourceBase {
     }
 
     return new ResourceResponse("Implement REST State POST!");
+  }
+
+  /**
+   * Responds to GET requests.
+   *
+   * Returns a list of users/authors
+   */
+  public function get() {
+    try {
+      $query = \Drupal::entityQuery('user');
+      $nids = $query->execute();
+      $entities = \Drupal::entityTypeManager()->getStorage('user')->loadMultiple($nids);
+
+      foreach ($entities as $user) {
+        if ($user->id() != 0) {
+          $id = $user->id();
+          $mail = $user->getEmail();
+          $firstName = $user->field_first_name->value;
+          $lastName = $user->field_last_name->value;
+          $byline = $user->field_byline->value;
+          $icon = $user->get('user_picture')->entity->url();
+
+          $data[] = [
+            'id' => $id,
+            'mail' => $mail,
+            'firstName' => $firstName,
+            'lastName' => $lastName,
+            'byline' => $byline,
+            'icon' => $icon,
+          ];
+        }
+      }
+
+      return new ResourceResponse($data);
+    }
+    catch (Exception $e) {
+      return $e->getMessage();
+    }
   }
 
 }
