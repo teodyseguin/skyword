@@ -2,6 +2,7 @@
 
 namespace Drupal\skyword\Plugin\rest\resource;
 
+use Drupal\user\Entity\User;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -80,15 +81,19 @@ class SkywordAuthorsRestResource extends ResourceBase {
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    *   Throws exception expected.
    */
-  public function post() {
-
-    // You must to implement the logic of your REST Resource here.
-    // Use current user after pass authentication to validate access.
+  public function post($data) {
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
-    return new ResourceResponse("Implement REST State POST!");
+    try {
+      $this->createNewUser($data);
+
+      return new ResourceResponse($data);
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
   }
 
   /**
@@ -191,6 +196,45 @@ class SkywordAuthorsRestResource extends ResourceBase {
     if (NULL == $user->get('user_picture')->entity->url()) return NULL;
 
     return $user->get('user_picture')->entity->url();
+  }
+
+  /**
+   * Prepare a new user object for saving
+   *
+   * @param $data
+   *   the request post data
+   */
+  private function createNewUser($data) {
+    try {
+      $userName = str_replace(' ', '', strtolower($data['firstName']) . strtolower($data['lastName']));
+      $mail = $data['email'];
+      $firstName = $data['firstName'];
+      $lastName = $data['lastName'];
+      $byline = $data['byline'];
+      $language = \Drupal::languageManager()->getCurrentLanguage()->getId();
+
+      $newUser = User::create();
+      $newUser->setPassword(rand());
+      $newUser->enforceIsNew();
+      $newUser->setEmail($mail);
+      $newUser->setUsername($userName);
+      $newUser->set('langcode', $language);
+      $newUser->set('field_first_name', $firstName);
+      $newUser->set('field_last_name', $lastName);
+      $newUser->set('field_byline', $byline);
+
+      if ($data['icon']) {
+        $icon = file_get_contents($data['icon']);
+        $file = file_save_data($icon, NULL, FILE_EXISTS_REPLACE);
+        $newUser->set('user_picture', $file);
+      }
+
+      $newUser->activate();
+      $newUser->save();
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
   }
 
 }
