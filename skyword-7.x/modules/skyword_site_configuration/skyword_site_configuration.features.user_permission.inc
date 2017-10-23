@@ -10,11 +10,22 @@
 function skyword_site_configuration_user_default_permissions() {
   $permissions = array();
 
+  // Exported permission: 'administer skyword'.
+  $permissions['administer skyword'] = array(
+    'name' => 'administer skyword',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'skyword',
+  );
+
   // Exported permission: 'author create'.
   $permissions['author create'] = array(
     'name' => 'author create',
     'roles' => array(
+      'administrator' => 'administrator',
       'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
     ),
     'module' => 'skyword',
   );
@@ -23,7 +34,9 @@ function skyword_site_configuration_user_default_permissions() {
   $permissions['authors retrieve'] = array(
     'name' => 'authors retrieve',
     'roles' => array(
+      'administrator' => 'administrator',
       'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
     ),
     'module' => 'skyword',
   );
@@ -32,7 +45,9 @@ function skyword_site_configuration_user_default_permissions() {
   $permissions['content types create'] = array(
     'name' => 'content types create',
     'roles' => array(
+      'administrator' => 'administrator',
       'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
     ),
     'module' => 'skyword',
   );
@@ -41,7 +56,9 @@ function skyword_site_configuration_user_default_permissions() {
   $permissions['content types retrieve'] = array(
     'name' => 'content types retrieve',
     'roles' => array(
+      'administrator' => 'administrator',
       'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
     ),
     'module' => 'skyword',
   );
@@ -50,7 +67,9 @@ function skyword_site_configuration_user_default_permissions() {
   $permissions['media create'] = array(
     'name' => 'media create',
     'roles' => array(
+      'administrator' => 'administrator',
       'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
     ),
     'module' => 'skyword',
   );
@@ -59,7 +78,9 @@ function skyword_site_configuration_user_default_permissions() {
   $permissions['media retrieve'] = array(
     'name' => 'media retrieve',
     'roles' => array(
+      'administrator' => 'administrator',
       'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
     ),
     'module' => 'skyword',
   );
@@ -68,7 +89,9 @@ function skyword_site_configuration_user_default_permissions() {
   $permissions['post create'] = array(
     'name' => 'post create',
     'roles' => array(
+      'administrator' => 'administrator',
       'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
     ),
     'module' => 'skyword',
   );
@@ -77,7 +100,9 @@ function skyword_site_configuration_user_default_permissions() {
   $permissions['post delete'] = array(
     'name' => 'post delete',
     'roles' => array(
+      'administrator' => 'administrator',
       'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
     ),
     'module' => 'skyword',
   );
@@ -86,7 +111,9 @@ function skyword_site_configuration_user_default_permissions() {
   $permissions['posts retrieve'] = array(
     'name' => 'posts retrieve',
     'roles' => array(
+      'administrator' => 'administrator',
       'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
     ),
     'module' => 'skyword',
   );
@@ -97,6 +124,7 @@ function skyword_site_configuration_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
     ),
     'module' => 'skyword',
   );
@@ -105,7 +133,9 @@ function skyword_site_configuration_user_default_permissions() {
   $permissions['taxonomy create'] = array(
     'name' => 'taxonomy create',
     'roles' => array(
+      'administrator' => 'administrator',
       'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
     ),
     'module' => 'skyword',
   );
@@ -116,6 +146,7 @@ function skyword_site_configuration_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
     ),
     'module' => 'skyword',
   );
@@ -136,6 +167,8 @@ function skyword_site_configuration_user_default_permissions() {
     'name' => 'version retrieve',
     'roles' => array(
       'administrator' => 'administrator',
+      'anonymous user' => 'anonymous user',
+      'authenticated user' => 'authenticated user',
     ),
     'module' => 'skyword',
   );

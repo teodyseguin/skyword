@@ -11,9 +11,6 @@ function skyword_site_configuration_ctools_plugin_api($module = NULL, $api = NUL
   if ($module == "services" && $api == "services") {
     return array("version" => "3");
   }
-  if ($module == "strongarm" && $api == "strongarm") {
-    return array("version" => "1");
-  }
 }
 
 /**
@@ -27,31 +24,25 @@ function skyword_site_configuration_default_oauth2_server() {
     "settings" : {
       "enforce_state" : true,
       "default_scope" : "skyword",
-      "allow_implicit" : 1,
+      "allow_implicit" : 0,
       "use_openid_connect" : 0,
       "use_crypto_tokens" : 0,
       "grant_types" : {
         "authorization_code" : "authorization_code",
         "client_credentials" : "client_credentials",
-        "refresh_token" : "refresh_token",
-        "password" : "password",
-        "urn:ietf:params:oauth:grant-type:jwt-bearer" : 0
+        "urn:ietf:params:oauth:grant-type:jwt-bearer" : 0,
+        "refresh_token" : 0,
+        "password" : 0
       },
       "always_issue_new_refresh_token" : 0,
       "unset_refresh_token_after_use" : 1,
-      "access_lifetime" : "3600",
+      "access_lifetime" : "360000",
       "id_lifetime" : "3600",
       "refresh_token_lifetime" : "1209600",
       "require_exact_redirect_uri" : 0
     },
     "rdf_mapping" : [],
-    "scopes" : [
-      {
-        "name" : "skyword",
-        "description" : "Skyword scope",
-        "rdf_mapping" : []
-      }
-    ]
+    "scopes" : [ { "name" : "skyword", "description" : "skyword", "rdf_mapping" : [] } ]
   }');
   return $items;
 }

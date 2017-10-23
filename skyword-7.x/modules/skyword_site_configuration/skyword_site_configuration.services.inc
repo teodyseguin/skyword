@@ -13,7 +13,7 @@ function skyword_site_configuration_default_services_endpoint() {
   $endpoint = new stdClass();
   $endpoint->disabled = FALSE; /* Edit this to true to make a default endpoint disabled initially */
   $endpoint->api_version = 3;
-  $endpoint->name = 'skyword_services';
+  $endpoint->name = 'skyword';
   $endpoint->server = 'rest_server';
   $endpoint->path = 'skyword/v1';
   $endpoint->authentication = array(
@@ -31,10 +31,10 @@ function skyword_site_configuration_default_services_endpoint() {
     ),
     'parsers' => array(
       'application/json' => TRUE,
-      'application/x-www-form-urlencoded' => TRUE,
-      'application/xml' => TRUE,
-      'multipart/form-data' => TRUE,
-      'text/xml' => TRUE,
+      'application/x-www-form-urlencoded' => FALSE,
+      'application/xml' => FALSE,
+      'multipart/form-data' => FALSE,
+      'text/xml' => FALSE,
     ),
   );
   $endpoint->resources = array(
@@ -211,19 +211,6 @@ function skyword_site_configuration_default_services_endpoint() {
         ),
       ),
     ),
-    'token' => array(
-      'operations' => array(
-        'index' => array(
-          'enabled' => '1',
-          'settings' => array(
-            'oauth2_server' => array(
-              'require_authentication' => '1',
-              'scope' => 'skyword',
-            ),
-          ),
-        ),
-      ),
-    ),
     'version' => array(
       'operations' => array(
         'index' => array(
@@ -239,7 +226,7 @@ function skyword_site_configuration_default_services_endpoint() {
     ),
   );
   $endpoint->debug = 0;
-  $export['skyword_services'] = $endpoint;
+  $export['skyword'] = $endpoint;
 
   return $export;
 }
