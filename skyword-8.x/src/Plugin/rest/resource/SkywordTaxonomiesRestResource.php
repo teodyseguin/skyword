@@ -17,8 +17,8 @@ use Psr\Log\LoggerInterface;
  *   id = "skyword_taxonomies_rest_resource",
  *   label = @Translation("Skyword taxonomies rest resource"),
  *   uri_paths = {
- *     "canonical" = "/skyword/publish/v1/taxonomies",
- *     "https://www.drupal.org/link-relations/create" = "/skyword/publish/v1/taxonomies"
+ *     "canonical" = "/skyword/v1/taxonomies",
+ *     "https://www.drupal.org/link-relations/create" = "/skyword/v1/taxonomies"
  *   }
  * )
  */
