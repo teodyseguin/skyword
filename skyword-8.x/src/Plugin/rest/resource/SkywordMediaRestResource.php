@@ -16,7 +16,8 @@ use Psr\Log\LoggerInterface;
  *   id = "skyword_media_rest_resource",
  *   label = @Translation("Skyword media rest resource"),
  *   uri_paths = {
- *     "canonical" = "/skyword/publish/v1/media"
+ *     "canonical" = "/skyword/v1/media",
+ *     "https://www.drupal.org/link-relations/create"
  *   }
  * )
  */
@@ -88,6 +89,40 @@ class SkywordMediaRestResource extends ResourceBase {
     }
 
     return new ResourceResponse("Implement REST State POST!");
+  }
+
+  /**
+   * Responds to GET requests.
+   *
+   * Returns a list of Media Entity.
+   */
+  public function get() {
+    if (!$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
+    }
+
+    try {
+      $query = \Drupal::entityQuery('file');
+      $files = $query->execute();
+      $entities = \Drupal::entityTypeManager()->getStorage('file')->loadMultiple($files);
+
+      foreach ($entities as $entity) {
+        $id = $entity->id();
+        $type = $entity->getMimeType();
+        $url = file_create_url($entity->getFileUri());
+
+        $data[] = [
+          'id' => $id,
+          'type' => $type,
+          'url' => $url,
+        ];
+      }
+
+      return new ResourceResponse($data);
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
   }
 
 }
