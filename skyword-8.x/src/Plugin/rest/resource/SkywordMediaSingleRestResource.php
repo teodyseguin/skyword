@@ -75,6 +75,9 @@ class SkywordMediaSingleRestResource extends ResourceBase {
    * Responds to GET requests.
    *
    * Returns a list of Media Entity.
+   *
+   * @param int $mediaId
+   *   The unique Identifier of the File Entity.
    */
   public function get($mediaId) {
     if (!$this->currentUser->hasPermission('access content')) {
