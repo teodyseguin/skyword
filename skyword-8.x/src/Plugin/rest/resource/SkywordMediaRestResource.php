@@ -89,7 +89,7 @@ class SkywordMediaRestResource extends ResourceBase {
     }
 
     try {
-      $headers = getallheaders();
+      $headers = $this->getHeaders();
 
       preg_match('/filename\=(\".*\")/', $headers['Content-Disposition'], $matches);
 
@@ -231,6 +231,18 @@ class SkywordMediaRestResource extends ResourceBase {
     return empty($data['filepath'])
       ? file_default_scheme() . '://' . $data['filename']
       : $this->fileCheckDestinationUri($data['filepath']);
+  }
+
+  /**
+   * Check to see if the function for getting the headers is present on the system.
+   */
+  private function getHeaders() {
+    if (function_exists('getallheaders')) {
+      return getallheaders();
+    }
+    elseif (function_exists('apache_request_headers')) {
+      return apache_request_headers();
+    }
   }
 
 }
