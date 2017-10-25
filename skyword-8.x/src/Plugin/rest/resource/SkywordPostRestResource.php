@@ -8,6 +8,7 @@ use Drupal\user\Entity\User;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
+use Drupal\rest\ModifiedResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Psr\Log\LoggerInterface;
@@ -16,15 +17,14 @@ use Psr\Log\LoggerInterface;
  * Provides a resource to get view modes by entity and bundle.
  *
  * @RestResource(
- *   id = "skyword_posts_rest_resource",
- *   label = @Translation("Skyword posts rest resource"),
+ *   id = "skyword_post_rest_resource",
+ *   label = @Translation("Skyword post rest resource"),
  *   uri_paths = {
- *     "canonical" = "/skyword/v1/posts",
- *     "https://www.drupal.org/link-relations/create" = "/skyword/v1/posts"
+ *     "canonical" = "/skyword/v1/posts/{postId}",
  *   }
  * )
  */
-class SkywordPostsRestResource extends ResourceBase {
+class SkywordPostRestResource extends ResourceBase {
 
   /**
    * A current user instance.
@@ -76,33 +76,41 @@ class SkywordPostsRestResource extends ResourceBase {
   }
 
   /**
-   * Responds to POST requests.
-   *
-   * Returns a list of bundles for specified entity.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
-   *   Throws exception expected.
-   */
-  public function post() {
-
-    // You must to implement the logic of your REST Resource here.
-    // Use current user after pass authentication to validate access.
-    if (!$this->currentUser->hasPermission('access content')) {
-      throw new AccessDeniedHttpException();
-    }
-
-    return new ResourceResponse("Implement REST State POST!");
-  }
-
-  /**
    * Responds to GET requests.
    *
    * Returns a list of Posts from the site.
+   *
+   * @param int $postId
+   *   The unique identifier of a node.
    */
-  public function get() {
+  public function get($postId) {
     try {
-      $posts = $this->getPosts();
+      $posts = $this->getPosts($postId);
       return new ResourceResponse($posts);
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
+  }
+
+  /**
+   * Responds to DELETE requests.
+   *
+   * Delete a certain post.
+   *
+   * @param int $postId
+   *   The unique identifier of a node.
+   */
+  public function delete($postId) {
+    try {
+      $ids = \Drupal::entityQuery('node')->condition('nid', $postId)->execute();
+      $posts = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($ids);
+
+      foreach ($posts as $post) {
+        $post->delete();
+      }
+
+      return new ModifiedResourceResponse(NULL, 204);
     }
     catch (Exception $e) {
       throw new Exception($e->getMessage());
@@ -115,8 +123,8 @@ class SkywordPostsRestResource extends ResourceBase {
    * @param string id
    *   The unique identifier of the node. Default to NULL.
    */
-  private function getPosts() {
-    $types = $this->getPostsTypes();
+  private function getPosts($id) {
+    $types = $this->getPostsTypes($id);
 
     return $this->buildPosts($types);
   }
@@ -127,10 +135,9 @@ class SkywordPostsRestResource extends ResourceBase {
    * @param string id
    *   The unique identifier of the node. Default to NULL.
    */
-  private function getPostsTypes() {
-    $types = \Drupal::entityQuery('node_type')->execute();
+  private function getPostsTypes($id) {
     $result = \Drupal::entityQuery('node')
-      ->condition('type', $types, 'IN')
+      ->condition('nid', $id)
       ->condition('status', 1)
       ->execute();
 
