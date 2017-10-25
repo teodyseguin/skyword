@@ -2,6 +2,7 @@
 
 namespace Drupal\skyword\Plugin\rest\resource;
 
+use Drupal\skyword\Plugin\rest\resource\SkywordCommonTools;
 use Drupal\user\Entity\User;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
@@ -211,26 +212,26 @@ class SkywordAuthorsRestResource extends ResourceBase {
       $firstName = $data['firstName'];
       $lastName = $data['lastName'];
       $byline = $data['byline'];
-      $language = \Drupal::languageManager()->getCurrentLanguage()->getId();
+      $status = 1;
+      $password = rand();
 
-      $newUser = User::create();
-      $newUser->setPassword(rand());
-      $newUser->enforceIsNew();
-      $newUser->setEmail($mail);
-      $newUser->setUsername($userName);
-      $newUser->set('langcode', $language);
-      $newUser->set('field_first_name', $firstName);
-      $newUser->set('field_last_name', $lastName);
-      $newUser->set('field_byline', $byline);
-
-      if ($data['icon']) {
-        $icon = file_get_contents($data['icon']);
-        $file = file_save_data($icon, NULL, FILE_EXISTS_REPLACE);
-        $newUser->set('user_picture', $file);
+      if (!empty($data['icon'])) {
+        $file = SkywordCommonTools::storeFile($data['icon']);
       }
 
-      $newUser->activate();
-      $newUser->save();
+      $prepareEntity = [
+        'name' => $userName,
+        'pass' => $password,
+        'mail' => $mail,
+        'status' => $status,
+        'user_picture' => ['target_id' => $file->id()],
+        'field_first_name' => $firstName,
+        'field_last_name' => $lastName,
+        'field_byline' => $byline,
+      ];
+
+      $entity = User::create($prepareEntity);
+      $entity->save();
     }
     catch (Exception $e) {
       throw new Exception($e->getMessage());

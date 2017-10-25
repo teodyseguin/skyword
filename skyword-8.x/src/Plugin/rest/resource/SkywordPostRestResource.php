@@ -84,6 +84,10 @@ class SkywordPostRestResource extends ResourceBase {
    *   The unique identifier of a node.
    */
   public function get($postId) {
+    if (!$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
+    }
+
     try {
       $posts = $this->getPosts($postId);
       return new ResourceResponse($posts);
@@ -102,6 +106,10 @@ class SkywordPostRestResource extends ResourceBase {
    *   The unique identifier of a node.
    */
   public function delete($postId) {
+    if (!$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
+    }
+
     try {
       $ids = \Drupal::entityQuery('node')->condition('nid', $postId)->execute();
       $posts = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($ids);

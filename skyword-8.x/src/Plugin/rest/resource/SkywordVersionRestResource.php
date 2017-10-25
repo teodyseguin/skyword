@@ -16,7 +16,7 @@ use Psr\Log\LoggerInterface;
  *   id = "skyword_version_rest_resource",
  *   label = @Translation("Skyword version rest resource"),
  *   uri_paths = {
- *     "canonical" = "/skyword/publish/v1/version"
+ *     "canonical" = "/skyword/v1/version"
  *   }
  * )
  */

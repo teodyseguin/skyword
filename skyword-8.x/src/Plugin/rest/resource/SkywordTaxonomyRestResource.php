@@ -16,7 +16,7 @@ use Psr\Log\LoggerInterface;
  *   id = "skyword_taxonomy_rest_resource",
  *   label = @Translation("Skyword taxonomy rest resource"),
  *   uri_paths = {
- *     "canonical" = "/skyword/publish/v1/taxonomies/{taxonomy}"
+ *     "canonical" = "/skyword/v1/taxonomies/{taxonomy}"
  *   }
  * )
  */
