@@ -19,5 +19,38 @@ class SkywordCommonTools {
     return file_save_data($fileContent, $directory . basename($file), FILE_EXISTS_REPLACE);
   }
 
+  public static function getTypes($id = NULL) {
+    try {
+      $query = \Drupal::entityQuery('node_type');
+
+      if ($id != NULL) {
+        $query->condition('type', $id);      
+      }
+
+      $types = $query->execute();
+
+      $entities = \Drupal::entityTypeManager()->getStorage('node_type')->loadMultiple($types);
+
+      $data = [
+        'elements' => [],
+        'total' => count($types),
+        'page' => $_GET['page'] ? $_GET['page'] : 1,
+      ];
+
+      foreach ($entities as $entity) {
+        $data['elements'][] = [
+          'type' => $entity->id(),
+          'name' => $entity->label(),
+          'description' => $entity->getHelp(),
+        ];
+      }
+
+      return $data;   
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
+  }
+
 }
 
