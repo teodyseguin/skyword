@@ -2,6 +2,7 @@
 
 namespace Drupal\skyword\Plugin\rest\resource;
 
+use Drupal\skyword\Plugin\rest\resource\SkywordCommonTools;
 use Drupal\node\Entity\Node;
 use Drupal\Core\Url;
 use Drupal\user\Entity\User;
@@ -10,6 +11,7 @@ use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -32,6 +34,7 @@ class SkywordPostsRestResource extends ResourceBase {
    * @var \Drupal\Core\Session\AccountProxyInterface
    */
   protected $currentUser;
+  private $fieldDefinitions;
 
   /**
    * Constructs a new SkywordPostsRestResource object.
@@ -83,15 +86,21 @@ class SkywordPostsRestResource extends ResourceBase {
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    *   Throws exception expected.
    */
-  public function post() {
-
-    // You must to implement the logic of your REST Resource here.
-    // Use current user after pass authentication to validate access.
+  public function post($data) {
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
-    return new ResourceResponse("Implement REST State POST!");
+    $test = $this->validatePostData($data);
+
+    if (!$test) throw new ConflictHttpException('Required fields are missing');
+
+    try {
+      return new ResourceResponse($this->buildPostData($data));
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
   }
 
   /**
@@ -100,6 +109,10 @@ class SkywordPostsRestResource extends ResourceBase {
    * Returns a list of Posts from the site.
    */
   public function get() {
+    if (!$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
+    }
+
     try {
       $posts = $this->getPosts();
       return new ResourceResponse($posts);
@@ -226,4 +239,70 @@ class SkywordPostsRestResource extends ResourceBase {
     }
   }
 
+  /**
+   * Validate the post request data if it has the minimal
+   * required fields for creating a certain type of node
+   *
+   * @param $data
+   *   the post request data object
+   */
+  private function validatePostData($data) {
+    if (empty($data['type'])) return FALSE;
+    if (empty($data['author'])) return FALSE;
+    if (empty($data['title'])) return FALSE;
+
+    $entityTypeId = 'node';
+    $entityFieldManager = \Drupal::service('entity_field.manager');
+
+    $this->fieldDefinitions = $entityFieldManager->getFieldDefinitions($entityTypeId, $data['type']);
+
+    return TRUE;
+  }
+
+  /**
+   * Build the Post Entity
+   *
+   * @param array $data
+   *   The post request payload, submitted to the API
+   */
+  private function buildPostData(array $data) {
+    try {
+      $type = $data['type'];
+      $author = $data['author'];
+      $title = $data['title'];
+      $dataFields = $data['fields'];
+
+      $prepareEntity = [
+        'type' => $type,
+        'uid' => $author,
+        'title' => $title,
+      ];
+
+      foreach ($dataFields as $key => $dataField) {
+        foreach ($this->fieldDefinitions as $fieldName => $fieldDefinition) {
+          if ($fieldDefinition->getLabel() == $dataField['name']) {
+            if ($dataField['type'] == 'image') {
+              $file = SkywordCommonTools::storeFile($dataField['value']);
+              $prepareEntity[$fieldName] = ['target_id' => $file->id()];
+            }
+            else {
+              $prepareEntity[$fieldName] = $dataField['value'];
+            }
+          }
+        }
+      }
+
+      $entity = Node::create($prepareEntity);
+      $entity->save();
+
+      // if all are successful, we will just return the post payload
+      // which indicates that the process of creation is a success
+      return $data;
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
+  }
+
 }
+
