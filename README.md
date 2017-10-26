@@ -6,7 +6,8 @@
 
 1. Install Drupal like you normally install it.
 2. Download these modules `services`, `oauth2_server`, `oauth2_client`, `oauth2_authentication`.
-3. Go to modules administration page and enable `Services`, `Rest Server`, `OAuth2 Server`, `OAuth2 Authentication`, `OAuth2 Client and Test`.
+3. Go to modules administration page and enable the following.
+   `Services`, `Rest Server`, `OAuth2 Server`, `OAuth2 Authentication`, `OAuth2 Client and Test`.
 3. Finally enable the `Skyword` module.
 
 ### II. Add a service
@@ -15,7 +16,7 @@
 2. Give the machine name *skyword_services*.
 3. Select the server as *REST*.
 4. For the "path to endpoint", enter `skyword/publish/v1/oauth2`.
-5. Choose the authentication type as *OAuth2 authentication*
+5. Choose the authentication type as *OAuth2 authentication*.
 6. Save
 
 ### III. Add resources

@@ -118,64 +118,83 @@ class SkywordAuthorRestResource extends ResourceBase {
   }
 
   /**
-   * Helper function to retrieve user first name as well as
-   * to validate if the accessibility for each property
-   * and methods are present.
+   * Helper function to retrieve user first name.
+   *
+   * Validate if the accessibility for each property and methods are present.
    *
    * @param object $user
-   *   The User Entity
+   *   The User Entity.
    */
   private function getFirstName($user) {
-    if (!isset($user->field_first_name)) return NULL;
-    if (!isset($user->field_first_name->value)) return NULL;
+    if (!isset($user->field_first_name)) {
+      return NULL;
+    }
+
+    if (!isset($user->field_first_name->value)) {
+      return NULL;
+    }
 
     return $user->field_first_name->value;
   }
 
   /**
-   * Helper function to retrieve user last name as well as
-   * to validate if the accessibility for each property
-   * and methods are present.
+   * Helper function to retrieve user last name.
+   *
+   * Validate if the accessibility for each property and methods are present.
    *
    * @param object $user
-   *   The User Entity
+   *   The User Entity.
    */
   private function getLastName($user) {
-    if (!isset($user->field_last_name)) return NULL;
-    if (!isset($user->field_last_name->value)) return NULL;
+    if (!isset($user->field_last_name)) {
+      return NULL;
+    }
+
+    if (!isset($user->field_last_name->value)) {
+      return NULL;
+    }
 
     return $user->field_last_name->value;
   }
 
   /**
-   * Helper function to retrieve user byline as well as
-   * to validate if the accessibility for each property
-   * and methods are present.
+   * Helper function to retrieve user byline.
+   *
+   * Validate if the accessibility for each property and methods are present.
    *
    * @param object $user
-   *   The User Entity
+   *   The User Entity.
    */
   private function getByline($user) {
-    if (!isset($user->field_byline)) return NULL;
-    if (!isset($user->field_byline->value)) return NULL;
+    if (!isset($user->field_byline)) {
+      return NULL;
+    }
+
+    if (!isset($user->field_byline->value)) {
+      return NULL;
+    }
 
     return $user->field_byline->value;
   }
 
   /**
-   * Helper function to retrieve user picture as well as
-   * to validate if the accessibility for each property
-   * and methods are present.
+   * Helper function to retrieve user picture.
+   *
+   * Validate if the accessibility for each property and methods are present.
    *
    * @param object $user
-   *   The User Entity
+   *   The User Entity.
    */
   private function getUserPicture($user) {
-    if (!isset($user->get('user_picture')->entity)) return NULL;
-    if (NULL == $user->get('user_picture')->entity->url()) return NULL;
+    if (!isset($user->get('user_picture')->entity)) {
+      return NULL;
+    }
+
+    if (NULL == $user->get('user_picture')->entity->url()) {
+      return NULL;
+    }
 
     return $user->get('user_picture')->entity->url();
   }
 
 }
-
