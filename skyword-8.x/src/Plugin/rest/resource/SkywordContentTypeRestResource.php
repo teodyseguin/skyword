@@ -126,7 +126,7 @@ class SkywordContentTypeRestResource extends ResourceBase {
 
       $this->createFields($data, $type);
 
-      return new ResourceResponse('Post');
+      return new ResourceResponse($data);
     }
     catch (Exception $e) {
       throw new Exception($e->getMessage());
