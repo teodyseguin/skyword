@@ -3,8 +3,6 @@
 namespace Drupal\skyword\Plugin\rest\resource;
 
 use Drupal\node\Entity\Node;
-use Drupal\Core\Url;
-use Drupal\user\Entity\User;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -128,7 +126,7 @@ class SkywordPostRestResource extends ResourceBase {
   /**
    * Helper to get all the posts from the site.
    *
-   * @param string id
+   * @param string $id
    *   The unique identifier of the node. Default to NULL.
    */
   private function getPosts($id) {
@@ -140,7 +138,7 @@ class SkywordPostRestResource extends ResourceBase {
   /**
    * Get all the posts type from the site.
    *
-   * @param string id
+   * @param string $id
    *   The unique identifier of the node. Default to NULL.
    */
   private function getPostsTypes($id) {
@@ -149,7 +147,7 @@ class SkywordPostRestResource extends ResourceBase {
       ->condition('status', 1)
       ->execute();
 
-    return (object)[
+    return (object) [
       'result' => $result,
       'count' => count($result),
     ];
@@ -198,7 +196,7 @@ class SkywordPostRestResource extends ResourceBase {
   }
 
   /**
-   * Build the Authors' data
+   * Build the Authors' data.
    *
    * @param object $node
    *   The node entity object.
@@ -220,7 +218,7 @@ class SkywordPostRestResource extends ResourceBase {
    * @param object $node
    *   The node entity.
    * @param array &$element
-   *   A passed by reference array of elements
+   *   A passed by reference array of elements.
    */
   private function buildFieldsData($node, array &$element) {
     $entityManager = \Drupal::service('entity_field.manager');

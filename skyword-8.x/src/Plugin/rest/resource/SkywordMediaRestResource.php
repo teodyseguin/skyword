@@ -166,7 +166,7 @@ class SkywordMediaRestResource extends ResourceBase {
    * @param array $file
    *   The post request payload submitted to the API.
    */
-  private function validateFile($file) {
+  private function validateFile(array $file) {
     if (!isset($file['file']) || empty($file['filename'])) {
       throw new ConflictHttpException('Missing data. The file upload cannot be completed');
     }
@@ -181,10 +181,6 @@ class SkywordMediaRestResource extends ResourceBase {
   private function fileCheckDestinationUri($uri) {
     $scheme = strstr($uri, '://', TRUE);
     $path = $scheme ? substr($uri, strlen("$scheme://")) : $uri;
-
-    // Sanitize the file extension, name, path and scheme provided by the user.
-    // $scheme = $this->sanitizeDestinationScheme($scheme);
-    // $path = $this->sanitizeDestinationPath($path);
 
     return "$scheme://$path";
   }
@@ -209,8 +205,10 @@ class SkywordMediaRestResource extends ResourceBase {
   /**
    * Helper method to save the file.
    *
-   * @param struct $file
+   * @param object $file
    *   A base_64 representation of a file.
+   * @param string $destination
+   *   The place where to store the file.
    */
   private function fileSave($file, $destination) {
     if (!$fileSaved = file_save_data(base64_decode($file), $destination)) {
@@ -234,7 +232,7 @@ class SkywordMediaRestResource extends ResourceBase {
   }
 
   /**
-   * Check to see if the function for getting the headers is present on the system.
+   * Check if the function for getting the headers is present.
    */
   private function getHeaders() {
     if (function_exists('getallheaders')) {
@@ -246,4 +244,3 @@ class SkywordMediaRestResource extends ResourceBase {
   }
 
 }
-

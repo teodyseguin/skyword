@@ -3,7 +3,6 @@
 namespace Drupal\skyword\Plugin\rest\resource;
 
 use Drupal\skyword\Plugin\rest\resource\SkywordCommonTools;
-use Drupal\user\Entity\User;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -83,24 +82,31 @@ class SkywordContentTypeRestResource extends ResourceBase {
    *   Throws exception expected.
    */
   public function post($data) {
-    
+    if (!$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
+    }
+
+    return new ResourceResponse('Post');
   }
 
   /**
    * Responds to GET requests.
    *
-   * Returns a list of content types
+   * Returns a list of content types.
    */
   public function get() {
+    if (!$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
+    }
+
     try {
       $types = SkywordCommonTools::getTypes();
 
-      return new ResourceResponse($types);  
+      return new ResourceResponse($types);
     }
     catch (Exception $e) {
       throw new Exception($e->getMessage());
-    }    
+    }
   }
 
 }
-

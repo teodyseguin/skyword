@@ -4,8 +4,6 @@ namespace Drupal\skyword\Plugin\rest\resource;
 
 use Drupal\skyword\Plugin\rest\resource\SkywordCommonTools;
 use Drupal\node\Entity\Node;
-use Drupal\Core\Url;
-use Drupal\user\Entity\User;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -93,10 +91,14 @@ class SkywordPostsRestResource extends ResourceBase {
 
     $test = $this->validatePostData($data);
 
-    if (!$test) throw new ConflictHttpException('Required fields are missing');
+    if (!$test) {
+      throw new ConflictHttpException('Required fields are missing');
+    }
 
     try {
-      return new ResourceResponse($this->buildPostData($data));
+      $posts = $this->buildPostData($data);
+
+      return new ResourceResponse($posts);
     }
     catch (Exception $e) {
       throw new Exception($e->getMessage());
@@ -115,6 +117,7 @@ class SkywordPostsRestResource extends ResourceBase {
 
     try {
       $posts = $this->getPosts();
+
       return new ResourceResponse($posts);
     }
     catch (Exception $e) {
@@ -124,9 +127,6 @@ class SkywordPostsRestResource extends ResourceBase {
 
   /**
    * Helper to get all the posts from the site.
-   *
-   * @param string id
-   *   The unique identifier of the node. Default to NULL.
    */
   private function getPosts() {
     $types = $this->getPostsTypes();
@@ -136,9 +136,6 @@ class SkywordPostsRestResource extends ResourceBase {
 
   /**
    * Get all the posts type from the site.
-   *
-   * @param string id
-   *   The unique identifier of the node. Default to NULL.
    */
   private function getPostsTypes() {
     $types = \Drupal::entityQuery('node_type')->execute();
@@ -147,7 +144,7 @@ class SkywordPostsRestResource extends ResourceBase {
       ->condition('status', 1)
       ->execute();
 
-    return (object)[
+    return (object) [
       'result' => $result,
       'count' => count($result),
     ];
@@ -196,7 +193,7 @@ class SkywordPostsRestResource extends ResourceBase {
   }
 
   /**
-   * Build the Authors' data
+   * Build the Authors' data.
    *
    * @param object $node
    *   The node entity object.
@@ -218,7 +215,7 @@ class SkywordPostsRestResource extends ResourceBase {
    * @param object $node
    *   The node entity.
    * @param array &$element
-   *   A passed by reference array of elements
+   *   A passed by reference array of elements.
    */
   private function buildFieldsData($node, array &$element) {
     $entityManager = \Drupal::service('entity_field.manager');
@@ -240,16 +237,23 @@ class SkywordPostsRestResource extends ResourceBase {
   }
 
   /**
-   * Validate the post request data if it has the minimal
-   * required fields for creating a certain type of node
+   * Validate the post request data if it has the minimal required fields.
    *
-   * @param $data
-   *   the post request data object
+   * @param array $data
+   *   The post request data object.
    */
-  private function validatePostData($data) {
-    if (empty($data['type'])) return FALSE;
-    if (empty($data['author'])) return FALSE;
-    if (empty($data['title'])) return FALSE;
+  private function validatePostData(array $data) {
+    if (empty($data['type'])) {
+      return FALSE;
+    }
+
+    if (empty($data['author'])) {
+      return FALSE;
+    }
+
+    if (empty($data['title'])) {
+      return FALSE;
+    }
 
     $entityTypeId = 'node';
     $entityFieldManager = \Drupal::service('entity_field.manager');
@@ -260,10 +264,10 @@ class SkywordPostsRestResource extends ResourceBase {
   }
 
   /**
-   * Build the Post Entity
+   * Build the Post Entity.
    *
    * @param array $data
-   *   The post request payload, submitted to the API
+   *   The post request payload, submitted to the API.
    */
   private function buildPostData(array $data) {
     try {
@@ -295,8 +299,8 @@ class SkywordPostsRestResource extends ResourceBase {
       $entity = Node::create($prepareEntity);
       $entity->save();
 
-      // if all are successful, we will just return the post payload
-      // which indicates that the process of creation is a success
+      // If all are successful, we will just return the post payload.
+      // This indicates that the process of creation is a success.
       return $data;
     }
     catch (Exception $e) {
@@ -305,4 +309,3 @@ class SkywordPostsRestResource extends ResourceBase {
   }
 
 }
-
