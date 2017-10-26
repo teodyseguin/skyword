@@ -152,7 +152,7 @@ class SkywordContentTypeRestResource extends ResourceBase {
    *
    * @param array $data
    *   The submitted data from post request.
-   * @param $type
+   * @param object $type
    *   The newly created entity type bundle.
    */
   private function createFields(array $data, $type) {
@@ -161,7 +161,7 @@ class SkywordContentTypeRestResource extends ResourceBase {
     }
 
     foreach ($data['fields'] as $field) {
-      switch($field['datatype']) {
+      switch ($field['datatype']) {
         case 'text field':
           $this->createTextField($field, $type);
           break;
@@ -534,13 +534,16 @@ class SkywordContentTypeRestResource extends ResourceBase {
   }
 
   /**
-   * Helper to remove spaces from a field's name
+   * Helper to remove spaces from a field's name.
    *
-   * @param $field
-   *   the field definition object from the post payload
+   * @param array $field
+   *   The field definition object from the post payload.
    */
-  private function removeFieldNameSpaces(&$field) {
-    if (empty($field['name'])) return;
+  private function removeFieldNameSpaces(array &$field) {
+    if (empty($field['name'])) {
+      return;
+    }
+
     return strtolower(str_replace(' ', '_', $field['name']));
   }
 
