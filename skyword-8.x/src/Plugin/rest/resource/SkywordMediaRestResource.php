@@ -2,8 +2,10 @@
 
 namespace Drupal\skyword\Plugin\rest\resource;
 
+use Drupal\skyword\Plugin\rest\resource\SkywordCommonTools;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
+use Drupal\Component\Serialization\Json;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -32,6 +34,21 @@ class SkywordMediaRestResource extends ResourceBase {
   protected $currentUser;
 
   /**
+   * Temporary holder of our query.
+   */
+  private $query;
+
+  /**
+   * Temporary holder of our response.
+   */
+  private $response;
+
+  /**
+   * Keeper for cache max age.
+   */
+  private $build;
+
+  /**
    * Constructs a new SkywordMediaRestResource object.
    *
    * @param array $configuration
@@ -57,6 +74,10 @@ class SkywordMediaRestResource extends ResourceBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
+
+    $this->build = ['#cache' => ['#max-age' => 0]];
+
+    $this->response = (new ResourceResponse())->addCacheableDependency($this->build);
   }
 
   /**
@@ -126,8 +147,11 @@ class SkywordMediaRestResource extends ResourceBase {
     }
 
     try {
-      $query = \Drupal::entityQuery('file');
-      $files = $query->execute();
+      $this->query = \Drupal::entityQuery('file');
+
+      SkywordCommonTools::pager($this->response, $this->query);
+
+      $files = $this->query->execute();
       $entities = \Drupal::entityTypeManager()->getStorage('file')->loadMultiple($files);
 
       foreach ($entities as $entity) {
@@ -142,7 +166,7 @@ class SkywordMediaRestResource extends ResourceBase {
         ];
       }
 
-      return new ResourceResponse($data);
+      return $this->response->setContent(Json::encode($data));
     }
     catch (Exception $e) {
       throw new Exception($e->getMessage());

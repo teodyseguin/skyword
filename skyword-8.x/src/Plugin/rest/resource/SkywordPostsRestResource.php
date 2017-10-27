@@ -3,6 +3,7 @@
 namespace Drupal\skyword\Plugin\rest\resource;
 
 use Drupal\skyword\Plugin\rest\resource\SkywordCommonTools;
+use Drupal\Component\Serialization\Json;
 use Drupal\node\Entity\Node;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
@@ -35,6 +36,21 @@ class SkywordPostsRestResource extends ResourceBase {
   private $fieldDefinitions;
 
   /**
+   * Temporary holder of our query.
+   */
+  private $query;
+
+  /**
+   * Temporary holder of our response.
+   */
+  private $response;
+
+  /**
+   * Keeper for cache max age.
+   */
+  private $build;
+
+  /**
    * Constructs a new SkywordPostsRestResource object.
    *
    * @param array $configuration
@@ -60,6 +76,10 @@ class SkywordPostsRestResource extends ResourceBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
+
+    $this->build = ['#cache' => ['#max-age' => 0]];
+
+    $this->response = (new ResourceResponse())->addCacheableDependency($this->build);
   }
 
   /**
@@ -118,7 +138,7 @@ class SkywordPostsRestResource extends ResourceBase {
     try {
       $posts = $this->getPosts();
 
-      return new ResourceResponse($posts);
+      return $this->response->setContent(Json::encode($posts));
     }
     catch (Exception $e) {
       throw new Exception($e->getMessage());
@@ -139,10 +159,14 @@ class SkywordPostsRestResource extends ResourceBase {
    */
   private function getPostsTypes() {
     $types = \Drupal::entityQuery('node_type')->execute();
-    $result = \Drupal::entityQuery('node')
+
+    $this->query = \Drupal::entityQuery('node')
       ->condition('type', $types, 'IN')
-      ->condition('status', 1)
-      ->execute();
+      ->condition('status', 1);
+
+    SkywordCommonTools::pager($this->response, $this->query);
+
+    $result = $this->query->execute();
 
     return (object) [
       'result' => $result,
