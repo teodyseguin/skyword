@@ -31,7 +31,7 @@ class SkywordController extends ControllerBase {
         'client_secret' => $payload['client_secret'],
         'scope' => 'skyword',
         'username' => 'admin',
-        'password' => 'admin1234',
+        'password' => 'drupaladm1n',
       ],
       'headers' => [
         'Content-Type' => 'application/x-www-form-urlencoded',
