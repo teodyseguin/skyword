@@ -4,6 +4,7 @@ namespace Drupal\skyword\Plugin\rest\resource;
 
 use Drupal\skyword\Plugin\rest\resource\SkywordCommonTools;
 use Drupal\user\Entity\User;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -33,6 +34,21 @@ class SkywordAuthorsRestResource extends ResourceBase {
   protected $currentUser;
 
   /**
+   * Temporary holder of our query.
+   */
+  private $query;
+
+  /**
+   * Temporary holder of our response.
+   */
+  private $response;
+
+  /**
+   * Keeper for cache max age.
+   */
+  private $build;
+
+  /**
    * Constructs a new SkywordAuthorsRestResource object.
    *
    * @param array $configuration
@@ -58,6 +74,10 @@ class SkywordAuthorsRestResource extends ResourceBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
+
+    $this->build = ['#cache' => ['#max-age' => 0]];
+
+    $this->response = (new ResourceResponse())->addCacheableDependency($this->build);
   }
 
   /**
@@ -108,34 +128,32 @@ class SkywordAuthorsRestResource extends ResourceBase {
     }
 
     try {
-      $query = \Drupal::entityQuery('user');
-      $nids = $query->execute();
-      $entities = \Drupal::entityTypeManager()->getStorage('user')->loadMultiple($nids);
+      $this->query = \Drupal::entityQuery('user');
+
+      SkywordCommonTools::pager($this->response, $this->query);
+
+      $results = $this->query->execute();
+      $entities = \Drupal::entityTypeManager()
+        ->getStorage('user')
+        ->loadMultiple($results);
 
       foreach ($entities as $user) {
         if ($user->id() != 0) {
-          $id = $user->id();
-          $mail = $user->getEmail();
-          $firstName = $this->getFirstName($user);
-          $lastName = $this->getLastName($user);
-          $byline = $this->getByline($user);
-          $icon = $this->getUserPicture($user);
-
-          $data[] = [
-            'id' => $id,
-            'mail' => $mail,
-            'firstName' => $firstName,
-            'lastName' => $lastName,
-            'byline' => $byline,
-            'icon' => $icon,
+          $datas[] = [
+            'id' => $user->id(),
+            'mail' => $user->getEmail(),
+            'firstName' => $this->getFirstName($user),
+            'lastName' => $this->getLastName($user),
+            'byline' => $this->getByline($user),
+            'icon' => $this->getUserPicture($user),
           ];
         }
       }
 
-      return new ResourceResponse($data);
+      return $this->response->setContent(Json::encode($datas));
     }
     catch (Exception $e) {
-      return $e->getMessage();
+      throw new Exception($e->getMessage());
     }
   }
 
@@ -208,15 +226,22 @@ class SkywordAuthorsRestResource extends ResourceBase {
    *   The User Entity.
    */
   private function getUserPicture($user) {
-    if (!isset($user->get('user_picture')->entity)) {
-      return NULL;
-    }
+    try {
+      if (!isset($user->get('user_picture')->entity)) {
+        return NULL;
+      }
 
-    if (NULL == $user->get('user_picture')->entity->url()) {
-      return NULL;
-    }
+      $userPicture = $user->get('user_picture')->entity;
 
-    return $user->get('user_picture')->entity->url();
+      if (!method_exists($userPicture, 'url')) {
+        return NULL;
+      }
+
+      // return $user->get('user_picture')->getValues();
+    }
+    catch (Exception $e) {
+      throw new Exception($e->getMessage());
+    }
   }
 
   /**

@@ -4,6 +4,7 @@ namespace Drupal\skyword\Plugin\rest\resource;
 
 use Drupal\skyword\Plugin\rest\resource\SkywordCommonTools;
 use Drupal\node\Entity\NodeType;
+use Drupal\Component\Serialization\Json;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\Core\Session\AccountProxyInterface;
@@ -35,6 +36,21 @@ class SkywordContentTypeRestResource extends ResourceBase {
   protected $currentUser;
 
   /**
+   * Temporary holder of our query.
+   */
+  private $query;
+
+  /**
+   * Temporary holder of our response.
+   */
+  private $response;
+
+  /**
+   * Keeper for cache max age.
+   */
+  private $build;
+
+  /**
    * Constructs a new SkywordAuthorsRestResource object.
    *
    * @param array $configuration
@@ -60,6 +76,10 @@ class SkywordContentTypeRestResource extends ResourceBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
+
+    $this->build = ['#cache' => ['#max-age' => 0]];
+
+    $this->response = (new ResourceResponse())->addCacheableDependency($this->build);
   }
 
   /**
@@ -87,9 +107,9 @@ class SkywordContentTypeRestResource extends ResourceBase {
     }
 
     try {
-      $types = SkywordCommonTools::getTypes();
+      $types = SkywordCommonTools::getTypes(NULL, $this->query, $this->response);
 
-      return new ResourceResponse($types);
+      return $this->response->setContent(Json::encode($types));;
     }
     catch (Exception $e) {
       throw new Exception($e->getMessage());

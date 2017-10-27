@@ -27,10 +27,18 @@ class SkywordCommonTools {
    *
    * @param string $id
    *   The unique identifier of the content type.
+   * @param object $query
+   *   A passed reference of the query object.
+   * @param object $response
+   *   A passed reference of the response object.
    */
-  public static function getTypes($id = NULL) {
+  public static function getTypes($id = NULL, &$query, &$response = NULL) {
     try {
       $query = \Drupal::entityQuery('node_type');
+
+      if ($response != NULL) {
+        static::pager($response, $query);
+      }
 
       if ($id != NULL) {
         $query->condition('type', $id);
@@ -58,6 +66,56 @@ class SkywordCommonTools {
     }
     catch (Exception $e) {
       throw new Exception($e->getMessage());
+    }
+  }
+
+  /**
+   * Modify the header response and include some header properties.
+   *
+   * One important thing to note is the pagination.
+   */
+  public static function pager(&$response, &$query) {
+    $currentPage = $_GET['page'];
+    $perPage = $_GET['per_page'];
+
+    if (!$currentPage) {
+      return;
+    }
+
+    if (!$perPage) {
+      return;
+    }
+
+    $firstRecord = $currentPage * $perPage;
+    $next = $currentPage + 1;
+    $prev = $currentPage - 1;
+    $total = count($query->execute());
+    $last = $total % $perPage;
+
+    $url = (isset($_SERVER['HTTPS']) ? 'https:' : 'http:') . '//' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST_URI'], '?');
+
+    $response->headers->add(['X-TOTAL-Count' => $total]);
+
+    $headerLink = [];
+
+    if ($next < $last) {
+      $headerLink[] = "<{$url}?page={$next}&per_page={$perPage}>; rel=\"next\"";
+    }
+
+    $headerLink[] = "<{$url}?page=$last&per_page={$perPage}>; rel=\"last\"";
+    $headerLink[] = "<{$url}?page=1&per_page={$perPage}>; rel=\"first\"";
+
+    if ($prev > 0) {
+      $headerLink[] = "<{$url}?page={$prev}&per_page={$perPage}>; rel=\"prev\"";
+    }
+
+    $response->headers->add(['LINK' => implode(',', $headerLink)]);
+
+    if ($perPage > $total) {
+      $query->range(0, $total);
+    }
+    else {
+      $query->range($firstRecord, $perPage);
     }
   }
 

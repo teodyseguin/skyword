@@ -2,6 +2,8 @@
 
 namespace Drupal\skyword\Plugin\rest\resource;
 
+use Drupal\skyword\Plugin\rest\resource\SkywordCommonTools;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -32,6 +34,21 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
   protected $currentUser;
 
   /**
+   * Temporary holder of our query.
+   */
+  private $query;
+
+  /**
+   * Temporary holder of our response.
+   */
+  private $response;
+
+  /**
+   * Keeper for cache max age.
+   */
+  private $build;
+
+  /**
    * Constructs a new SkywordTaxonomiesRestResource object.
    *
    * @param array $configuration
@@ -57,6 +74,10 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
+
+    $this->build = ['#cache' => ['#max-age' => 0]];
+
+    $this->response = (new ResourceResponse())->addCacheableDependency($this->build);
   }
 
   /**
@@ -119,15 +140,20 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
     }
 
     $entities = $this->getTaxonomies();
-    return new ResourceResponse($this->buildData($entities));
+    $data = $this->buildData($entities);
+
+    return $this->response->setContent(Json::encode($data));
   }
 
   /**
    * Get all the Taxonomies.
    */
   private function getTaxonomies() {
-    $query = \Drupal::entityQuery('taxonomy_vocabulary');
-    $taxonomyIds = $query->execute();
+    $this->query = \Drupal::entityQuery('taxonomy_vocabulary');
+
+    SkywordCommonTools::pager($this->response, $this->query);
+
+    $taxonomyIds = $this->query->execute();
 
     return \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary')->loadMultiple($taxonomyIds);
   }
