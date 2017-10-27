@@ -233,8 +233,6 @@ class SkywordAuthorsRestResource extends ResourceBase {
 
       $userPicture = $user->get('user_picture')->entity;
 
-      object_log('user picture-'.rand(), $userPicture);
-
       if (!method_exists($userPicture, 'url')) {
         return NULL;
       }
