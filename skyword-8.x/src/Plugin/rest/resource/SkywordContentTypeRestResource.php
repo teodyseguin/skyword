@@ -109,10 +109,10 @@ class SkywordContentTypeRestResource extends ResourceBase {
     try {
       $types = SkywordCommonTools::getTypes(NULL, $this->query, $this->response);
 
-      return $this->response->setContent(Json::encode($types));;
+      return $this->response->setContent(Json::encode($types));
     }
     catch (Exception $e) {
-      return new ResourceResponse('Cannot fetch the list of content types', 500)
+      return new ResourceResponse('Cannot fetch the list of content types', 500);
     }
   }
 
