@@ -1,0 +1,7 @@
+skyword.oauth2_token:
+  path: '/oauth2/token'
+  defaults:
+    _controller: 'Drupal\skyword\Controller\SkywordController::token'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
