@@ -113,7 +113,7 @@ class SkywordAuthorRestResource extends ResourceBase {
       return new ResourceResponse($data);
     }
     catch (Exception $e) {
-      return $e->getMessage();
+      return new ResourceResponse("Cannot fetch author with ID $authorId", 500);
     }
   }
 

@@ -105,7 +105,7 @@ class SkywordMediaSingleRestResource extends ResourceBase {
       return new ResourceResponse($data);
     }
     catch (Exception $e) {
-      throw new Exception($e->getMessage());
+      return new ResourseResponse("Cannot fetch the media with ID $mediaId", 500);
     }
   }
 

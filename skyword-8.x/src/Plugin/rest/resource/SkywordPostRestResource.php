@@ -91,7 +91,7 @@ class SkywordPostRestResource extends ResourceBase {
       return new ResourceResponse($posts);
     }
     catch (Exception $e) {
-      throw new Exception($e->getMessage());
+      return new ResourceResponse("Cannot fetch the post with ID $postId", 500);
     }
   }
 
@@ -119,7 +119,7 @@ class SkywordPostRestResource extends ResourceBase {
       return new ModifiedResourceResponse(NULL, 204);
     }
     catch (Exception $e) {
-      throw new Exception($e->getMessage());
+      return new ResourceResponse("Cannot delete the post with id $postId", 500);
     }
   }
 

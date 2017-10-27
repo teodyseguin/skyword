@@ -127,7 +127,7 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
       return new ResourceResponse($data);
     }
     catch (Exception $e) {
-      throw new Exception($e->getMessage());
+      return new ResourceResponse('Cannot create a new taxonomy', 500);
     }
   }
 
@@ -139,10 +139,15 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
       throw new AccessDeniedHttpException();
     }
 
-    $entities = $this->getTaxonomies();
-    $data = $this->buildData($entities);
+    try {
+      $entities = $this->getTaxonomies();
+      $data = $this->buildData($entities);
 
-    return $this->response->setContent(Json::encode($data));
+      return $this->response->setContent(Json::encode($data));
+    }
+    catch (Exception $e) {
+      return new ResourceResponse('Cannot fetch the list of taxonomies', 500);
+    }
   }
 
   /**

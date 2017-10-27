@@ -112,7 +112,7 @@ class SkywordContentTypeRestResource extends ResourceBase {
       return $this->response->setContent(Json::encode($types));;
     }
     catch (Exception $e) {
-      throw new Exception($e->getMessage());
+      return new ResourceResponse('Cannot fetch the list of content types', 500)
     }
   }
 
@@ -149,7 +149,7 @@ class SkywordContentTypeRestResource extends ResourceBase {
       return new ResourceResponse($data);
     }
     catch (Exception $e) {
-      throw new Exception($e->getMessage());
+      return new ResourceResponse('Cannot create a new content type', 500);
     }
   }
 

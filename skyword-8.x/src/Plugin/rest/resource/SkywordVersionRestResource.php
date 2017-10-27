@@ -80,22 +80,24 @@ class SkywordVersionRestResource extends ResourceBase {
    *   Throws exception expected.
    */
   public function get() {
-
-    // You must to implement the logic of your REST Resource here.
-    // Use current user after pass authentication to validate access.
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
-    $response = [
-      'version' => 1,
-      'cms' => [
-        'name' => 'Drupal',
-        'version' => \Drupal::VERSION,
-      ],
-    ];
+    try {
+      $response = [
+        'version' => 1,
+        'cms' => [
+          'name' => 'Drupal',
+          'version' => \Drupal::VERSION,
+        ],
+      ];
 
-    return new ResourceResponse($response);
+      return new ResourceResponse($response);
+    }
+    catch (Exception $e) {
+      return new ResourceResponse('Cannot get the version of the CMS', 500);
+    }
   }
 
 }

@@ -82,8 +82,14 @@ class SkywordTaxonomyRestResource extends ResourceBase {
       throw new AccessDeniedHttpException();
     }
 
-    $entities = $this->getTaxonomy($id);
-    return new ResourceResponse($this->buildData($entities, FALSE));
+    try {
+      $entities = $this->getTaxonomy($id);
+
+      return new ResourceResponse($this->buildData($entities, FALSE));
+    }
+    catch (Exception $e) {
+      return new ResourceResponse("Cannot fetch taxonomy with ID $id", 500);
+    }
   }
 
   /**

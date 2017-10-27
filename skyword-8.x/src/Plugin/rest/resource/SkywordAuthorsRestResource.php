@@ -113,7 +113,7 @@ class SkywordAuthorsRestResource extends ResourceBase {
       return new ResourceResponse($data);
     }
     catch (Exception $e) {
-      throw new Exception($e->getMessage());
+      return new ResourceResponse('Cannot create a new author', 500);
     }
   }
 
@@ -153,7 +153,7 @@ class SkywordAuthorsRestResource extends ResourceBase {
       return $this->response->setContent(Json::encode($datas));
     }
     catch (Exception $e) {
-      throw new Exception($e->getMessage());
+      return new ResourceResponse('Cannot fetch the list of authors', 500);
     }
   }
 

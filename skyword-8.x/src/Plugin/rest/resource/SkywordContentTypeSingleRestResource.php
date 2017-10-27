@@ -108,7 +108,7 @@ class SkywordContentTypeSingleRestResource extends ResourceBase {
       return $this->response->setContent(Json::encode($types));
     }
     catch (Exception $e) {
-      throw new Exception($e->getMessage());
+      return new ResourceResponse("Cannot get content type with ID $contentTypeId", 500);
     }
   }
 

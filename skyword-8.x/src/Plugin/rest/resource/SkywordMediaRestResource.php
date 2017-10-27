@@ -132,7 +132,7 @@ class SkywordMediaRestResource extends ResourceBase {
       return new ResourceResponse($result);
     }
     catch (Exception $e) {
-      throw new Exception($e->getMessage());
+      return new ResourceResponse('Cannot create a new media', 500);
     }
   }
 
@@ -169,7 +169,7 @@ class SkywordMediaRestResource extends ResourceBase {
       return $this->response->setContent(Json::encode($data));
     }
     catch (Exception $e) {
-      throw new Exception($e->getMessage());
+      return new ResourceResponse('Cannot get the list of media', 500);
     }
   }
 

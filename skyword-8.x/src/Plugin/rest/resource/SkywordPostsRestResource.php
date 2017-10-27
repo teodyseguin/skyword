@@ -10,7 +10,6 @@ use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -112,7 +111,7 @@ class SkywordPostsRestResource extends ResourceBase {
     $test = $this->validatePostData($data);
 
     if (!$test) {
-      throw new ConflictHttpException('Required fields are missing');
+      return new ResourceResponse('Cannot create a new post. Check your parameters.', 500);
     }
 
     try {
@@ -121,7 +120,7 @@ class SkywordPostsRestResource extends ResourceBase {
       return new ResourceResponse($posts);
     }
     catch (Exception $e) {
-      throw new Exception($e->getMessage());
+      return new ResourceResponse('Cannot create a new post', 500);
     }
   }
 
@@ -141,7 +140,7 @@ class SkywordPostsRestResource extends ResourceBase {
       return $this->response->setContent(Json::encode($posts));
     }
     catch (Exception $e) {
-      throw new Exception($e->getMessage());
+      return new ResourceResponse('Cannot fetch the list of posts', 500);
     }
   }
 
