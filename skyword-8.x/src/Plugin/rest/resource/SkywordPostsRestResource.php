@@ -2,9 +2,6 @@
 
 namespace Drupal\skyword\Plugin\rest\resource;
 
-use Drupal\skyword\Plugin\rest\resource\SkywordCommonTools;
-use Drupal\Component\Serialization\Json;
-use Drupal\node\Entity\Node;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -19,8 +16,7 @@ use Psr\Log\LoggerInterface;
  *   id = "skyword_posts_rest_resource",
  *   label = @Translation("Skyword posts rest resource"),
  *   uri_paths = {
- *     "canonical" = "/skyword/v1/posts",
- *     "https://www.drupal.org/link-relations/create" = "/skyword/v1/posts"
+ *     "canonical" = "/skyword/publish/v1/posts"
  *   }
  * )
  */
@@ -32,22 +28,6 @@ class SkywordPostsRestResource extends ResourceBase {
    * @var \Drupal\Core\Session\AccountProxyInterface
    */
   protected $currentUser;
-  private $fieldDefinitions;
-
-  /**
-   * Temporary holder of our query.
-   */
-  private $query;
-
-  /**
-   * Temporary holder of our response.
-   */
-  private $response;
-
-  /**
-   * Keeper for cache max age.
-   */
-  private $build;
 
   /**
    * Constructs a new SkywordPostsRestResource object.
@@ -75,10 +55,6 @@ class SkywordPostsRestResource extends ResourceBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
-
-    $this->build = ['#cache' => ['#max-age' => 0]];
-
-    $this->response = (new ResourceResponse())->addCacheableDependency($this->build);
   }
 
   /**
@@ -103,232 +79,15 @@ class SkywordPostsRestResource extends ResourceBase {
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    *   Throws exception expected.
    */
-  public function post($data) {
+  public function post() {
+
+    // You must to implement the logic of your REST Resource here.
+    // Use current user after pass authentication to validate access.
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
-    $test = $this->validatePostData($data);
-
-    if (!$test) {
-      return new ResourceResponse('Cannot create a new post. Check your parameters.', 500);
-    }
-
-    try {
-      $posts = $this->buildPostData($data);
-
-      return new ResourceResponse($posts);
-    }
-    catch (Exception $e) {
-      return new ResourceResponse('Cannot create a new post', 500);
-    }
-  }
-
-  /**
-   * Responds to GET requests.
-   *
-   * Returns a list of Posts from the site.
-   */
-  public function get() {
-    if (!$this->currentUser->hasPermission('access content')) {
-      throw new AccessDeniedHttpException();
-    }
-
-    try {
-      $posts = $this->getPosts();
-
-      return $this->response->setContent(Json::encode($posts));
-    }
-    catch (Exception $e) {
-      return new ResourceResponse('Cannot fetch the list of posts', 500);
-    }
-  }
-
-  /**
-   * Helper to get all the posts from the site.
-   */
-  private function getPosts() {
-    $types = $this->getPostsTypes();
-
-    return $this->buildPosts($types);
-  }
-
-  /**
-   * Get all the posts type from the site.
-   */
-  private function getPostsTypes() {
-    $types = \Drupal::entityQuery('node_type')->execute();
-
-    $this->query = \Drupal::entityQuery('node')
-      ->condition('type', $types, 'IN')
-      ->condition('status', 1);
-
-    SkywordCommonTools::pager($this->response, $this->query);
-
-    $result = $this->query->execute();
-
-    return (object) [
-      'result' => $result,
-      'count' => count($result),
-    ];
-  }
-
-  /**
-   * Build the Posts Object.
-   *
-   * @param object $types
-   *   An array of node types.
-   */
-  private function buildPosts($types) {
-    global $base_url;
-
-    $posts = [
-      'elements' => [],
-      'total' => $types->count,
-      'page' => $_GET['page'] ? $_GET['page'] : 1,
-    ];
-
-    foreach ($types->result as $nid) {
-      $node = Node::load($nid);
-
-      $id = $node->id();
-      $type = $node->bundle();
-      $title = $node->getTitle();
-
-      $url = $base_url . \Drupal::service('path.alias_manager')->getAliasByPath('/node/' . $id);
-      $created = format_date($node->getCreatedTime());
-
-      $element = [
-        'id' => $id,
-        'type' => $type,
-        'title' => $title,
-        'url' => $url,
-        'created' => $created,
-      ];
-
-      $this->buildAuthorData($node, $element);
-      $this->buildFieldsData($node, $element);
-
-      $posts['elements'][] = $element;
-    }
-
-    return $posts;
-  }
-
-  /**
-   * Build the Authors' data.
-   *
-   * @param object $node
-   *   The node entity object.
-   * @param array &$element
-   *   A passed by reference array of node elements.
-   */
-  private function buildAuthorData($node, array &$element) {
-    $user = $node->getOwner();
-
-    $element['author'] = [
-      'id' => $node->getOwnerId(),
-      'byline' => $user->field_byline->value,
-    ];
-  }
-
-  /**
-   * Helper to build the field definitions for the given Node type.
-   *
-   * @param object $node
-   *   The node entity.
-   * @param array &$element
-   *   A passed by reference array of elements.
-   */
-  private function buildFieldsData($node, array &$element) {
-    $entityManager = \Drupal::service('entity_field.manager');
-    $entityTypeId = 'node';
-    $bundle = $node->bundle();
-
-    $fieldDefinitions = $entityManager->getFieldDefinitions($entityTypeId, $bundle);
-
-    foreach ($fieldDefinitions as $fieldName => $fieldDefinition) {
-      if (!empty($fieldDefinition->getTargetBundle()) && $fieldName != 'promote') {
-        $element['fields'][] = [
-          'id' => $fieldDefinition->id(),
-          'name' => $fieldDefinition->getLabel(),
-          'type' => $fieldDefinition->getType(),
-          'value' => $node->get($fieldName)->value,
-        ];
-      }
-    }
-  }
-
-  /**
-   * Validate the post request data if it has the minimal required fields.
-   *
-   * @param array $data
-   *   The post request data object.
-   */
-  private function validatePostData(array $data) {
-    if (empty($data['type'])) {
-      return FALSE;
-    }
-
-    if (empty($data['author'])) {
-      return FALSE;
-    }
-
-    if (empty($data['title'])) {
-      return FALSE;
-    }
-
-    $entityTypeId = 'node';
-    $entityFieldManager = \Drupal::service('entity_field.manager');
-
-    $this->fieldDefinitions = $entityFieldManager->getFieldDefinitions($entityTypeId, $data['type']);
-
-    return TRUE;
-  }
-
-  /**
-   * Build the Post Entity.
-   *
-   * @param array $data
-   *   The post request payload, submitted to the API.
-   */
-  private function buildPostData(array $data) {
-    try {
-      $type = $data['type'];
-      $author = $data['author'];
-      $title = $data['title'];
-      $dataFields = $data['fields'];
-
-      $prepareEntity = [
-        'type' => $type,
-        'uid' => $author,
-        'title' => $title,
-      ];
-
-      foreach ($dataFields as $key => $dataField) {
-        foreach ($this->fieldDefinitions as $fieldName => $fieldDefinition) {
-          if ($fieldDefinition->getLabel() == $dataField['name']) {
-            if ($dataField['type'] == 'image') {
-              $file = SkywordCommonTools::storeFile($dataField['value']);
-              $prepareEntity[$fieldName] = ['target_id' => $file->id()];
-            }
-            else {
-              $prepareEntity[$fieldName] = $dataField['value'];
-            }
-          }
-        }
-      }
-
-      $entity = Node::create($prepareEntity);
-      $entity->save();
-
-      // If all are successful, we will just return the post payload.
-      // This indicates that the process of creation is a success.
-      return $data;
-    }
-    catch (Exception $e) {
-      throw new Exception($e->getMessage());
-    }
+    return new ResourceResponse("Implement REST State POST!");
   }
 
 }

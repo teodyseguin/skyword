@@ -16,7 +16,7 @@ use Psr\Log\LoggerInterface;
  *   id = "skyword_version_rest_resource",
  *   label = @Translation("Skyword version rest resource"),
  *   uri_paths = {
- *     "canonical" = "/skyword/v1/version"
+ *     "canonical" = "/skyword/publish/v1/version"
  *   }
  * )
  */
@@ -80,24 +80,22 @@ class SkywordVersionRestResource extends ResourceBase {
    *   Throws exception expected.
    */
   public function get() {
+
+    // You must to implement the logic of your REST Resource here.
+    // Use current user after pass authentication to validate access.
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
-    try {
-      $response = [
-        'version' => 1,
-        'cms' => [
-          'name' => 'Drupal',
-          'version' => \Drupal::VERSION,
-        ],
-      ];
+    $response = [
+      'version' => 1,
+      'cms' => [
+        'name' => 'Drupal',
+        'version' => \Drupal::VERSION,
+      ],
+    ];
 
-      return new ResourceResponse($response);
-    }
-    catch (Exception $e) {
-      return new ResourceResponse('Cannot get the version of the CMS', 500);
-    }
+    return new ResourceResponse($response);
   }
 
 }

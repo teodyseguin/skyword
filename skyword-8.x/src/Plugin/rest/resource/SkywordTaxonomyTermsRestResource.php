@@ -2,6 +2,8 @@
 
 namespace Drupal\skyword\Plugin\rest\resource;
 
+use Drupal\skyword\Plugin\rest\resource\SkywordCommonTools;
+use Drupal\Component\Serialization\Json;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -13,14 +15,14 @@ use Psr\Log\LoggerInterface;
  * Provides a resource to get view modes by entity and bundle.
  *
  * @RestResource(
- *   id = "skyword_taxonomies_rest_resource",
- *   label = @Translation("Skyword taxonomies rest resource"),
+ *   id = "skyword_taxonomy_terms_rest_resource",
+ *   label = @Translation("Skyword taxonomy terms rest resource"),
  *   uri_paths = {
- *     "canonical" = "/skyword/publish/v1/taxonomies"
+ *     "canonical" = "/skyword/v1/taxonomies/{taxonomy}/terms"
  *   }
  * )
  */
-class SkywordTaxonomiesRestResource extends ResourceBase {
+class SkywordTaxonomyTermsRestResource extends ResourceBase {
 
   /**
    * A current user instance.
@@ -30,7 +32,22 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
   protected $currentUser;
 
   /**
-   * Constructs a new SkywordTaxonomiesRestResource object.
+   * Temporary holder of our query.
+   */
+  private $query;
+
+  /**
+   * Temporary holder of our response.
+   */
+  private $response;
+
+  /**
+   * Keeper for cache max age.
+   */
+  private $build;
+
+  /**
+   * Constructs a new SkywordTaxonomyRestResource object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -55,6 +72,10 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
 
     $this->currentUser = $current_user;
+
+    $this->build = ['#cache' => ['#max-age' => 0]];
+
+    $this->response = (new ResourceResponse())->addCacheableDependency($this->build);    
   }
 
   /**
@@ -72,41 +93,37 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
   }
 
   /**
-   * Responds to POST requests.
+   * Responds to GET requests.
    *
-   * Returns a list of bundles for specified entity.
-   *
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
-   *   Throws exception expected.
+   * @param string $id
+   *   The unique identifier of the Taxonomy.
    */
-  public function post() {
-
-    // You must to implement the logic of your REST Resource here.
-    // Use current user after pass authentication to validate access.
+  public function get($id) {
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
-    return new ResourceResponse("Implement REST State POST!");
-  }
+    $entities = $this->getTaxonomyTerms($id);
+    $data = $this->buildData($entities);
 
-  /**
-   * Responds to GET requests.
-   */
-  public function get() {
-    $entities = $this->getTaxonomies();
-
-    return new ResourceResponse($this->buildData($entities));
+    return $this->response->setContent(Json::encode($data));
   }
 
   /**
    * Get all the Taxonomies.
+   *
+   * @param string $id
+   *   the unique identifier of the Taxonomy Vocabulary e.g. tags.
    */
-  private function getTaxonomies() {
-    $query = \Drupal::entityQuery('taxonomy_vocabulary');
-    $taxonomyIds = $query->execute();
+  private function getTaxonomyTerms($id) {
+    $this->query = \Drupal::entityQuery('taxonomy_term');
+    $this->query->condition('vid', $id);
 
-    return \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary')->loadMultiple($taxonomyIds);
+    SkywordCommonTools::pager($this->response, $this->query);
+
+    $terms = $this->query->execute();
+
+    return \Drupal::entityTypeManager()->getStorage('taxonomy_vocabulary')->loadMultiple($terms);
   }
 
   /**
@@ -114,43 +131,16 @@ class SkywordTaxonomiesRestResource extends ResourceBase {
    *
    * @param array $taxonomies
    *   an array of Taxonomy entities.
-   * @param bool $list
-   *   default to TRUE. signifies that we are returning a list.
-   *   set to FALSE. we signifies that we want to return a specific Taxonomy.
    */
-  private function buildData(array $taxonomies, $list = TRUE) {
-    if ($list) {
-      $data = [];
-
-      foreach ($taxonomies as $entity) {
-        $id = $entity->id();
-        $description = $entity->get('description');
-        $numTerms = $this->getTaxonomyTermsCount($id);
-
-        $data[] = [
-          'id' => $id,
-          'name' => $id,
-          'description' => $description,
-          'numTerms' => $numTerms,
-        ];
-      }
-
-      return $data;
+  private function buildData(array $taxonomies) {
+    foreach ($taxonomies as $entity) {
+      $data = [
+        'id' => $entity->id(),
+        'value' => $entity->get('name')->value,
+      ];
     }
-  }
 
-  /**
-   * Get the number of Taxonomy Terms via Taxonomy ID.
-   *
-   * @param int $id
-   *   the unique identifier of the Taxonomy.
-   */
-  private function getTaxonomyTermsCount($id) {
-    $query = \Drupal::entityQuery('taxonomy_term');
-    $query->condition('vid', $id);
-    $count = $query->count()->execute();
-
-    return intval($count);
+    return $data;
   }
 
 }
